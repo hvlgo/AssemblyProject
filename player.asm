@@ -25,7 +25,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		.if	eax == IDC_PLAY
 			invoke musicPlayControl, dialogHandle, playButtonState
 		.elseif eax == IDC_LOCAL
-			mov eax, 2
+			mov eax, 2 ; TODO: select the file and manage relative data struct
 		.endif
 	.elseif	eax == WM_CLOSE
 		invoke	EndDialog, dialogHandle, 0
@@ -39,8 +39,11 @@ dialogInit proc dialogHandle : dword
 	ret
 dialogInit endp
 
-musicPlayControl proc dialogHandle : dword, state : byte
-	.if state == _PAUSE
+musicPlayControl proc dialogHandle : dword, state : byte ; TODO: play the music in the music file data struct
+	.if state == _BEGIN
+		invoke playButtonControl, dialogHandle, _PLAY
+
+	.elseif state == _PAUSE
 		invoke playButtonControl, dialogHandle, _PLAY
 
 	.else

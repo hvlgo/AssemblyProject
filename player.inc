@@ -25,6 +25,7 @@ IDI_PAUSE EQU 122
 ; state for the button
 _PAUSE EQU 0
 _PLAY EQU 1
+_BEGIN EQU 2
 
 ; const parm of the icon
 ICON_HEIGHT EQU 32
