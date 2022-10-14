@@ -47,19 +47,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Dialog
-//
-
-IDD_MAIN DIALOGEX 0, 0, 487, 108
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "MusicPlayer"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // DESIGNINFO
 //
 
@@ -68,13 +55,24 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_MAIN, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 480
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 101
+        BOTTOMMARGIN, 94
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_PLAY                ICON                    "icon\\play.ico"
+
+IDI_LOCAL               ICON                    "icon\\view-column.ico"
+
+IDI_PAUSE               ICON                    "icon\\pause.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -90,12 +88,17 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// PNG
+// Dialog
 //
 
-IDB_PLAY                PNG                     "icon\\play.png"
-
-IDB_LOCAL               PNG                     "icon\\local.png"
+IDD_MAIN DIALOGEX 0, 0, 491, 95
+STYLE DS_SETFONT | DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "MusicPlayer"
+FONT 7, "微软雅黑", 400, 0, 0x0
+BEGIN
+    ICON            IDI_LOCAL,IDC_LOCAL,466,71,20,20,SS_NOTIFY
+    PUSHBUTTON      "Button2",IDC_PLAY,6,73,20,18,BS_ICON
+END
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
