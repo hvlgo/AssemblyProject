@@ -7,6 +7,7 @@ include gdi32.inc
 
 ; function declare
 mainProc proto dialogHandle:DWORD,message:DWORD, wParam:DWORD,lParam:DWORD
+listProc proto dialogHandle:DWORD,message:DWORD, wParam:DWORD,lParam:DWORD
 dialogInit proto dialogHandle : dword
 musicPlayControl proto dialogHandle : dword, state : byte
 playButtonControl proto dialogHandle : dword, state : byte
@@ -16,6 +17,7 @@ playButtonControl proto dialogHandle : dword, state : byte
 .const
 ; sequence id for the ui
 IDD_MAIN EQU 101
+IDD_LIST EQU 123
 IDC_PLAY EQU 1004
 IDC_LOCAL EQU 1005
 

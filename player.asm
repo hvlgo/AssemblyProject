@@ -9,7 +9,7 @@ include	player.inc
 start:
 	invoke GetModuleHandle, NULL
 	mov	hInstance, eax
-	invoke DialogBoxParamA, hInstance,IDD_MAIN, 0, offset mainProc, 0
+	invoke DialogBoxParam, hInstance,IDD_MAIN, 0, offset mainProc, 0
 	invoke ExitProcess, 0
 
 mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dword
@@ -25,6 +25,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		.if	eax == IDC_PLAY
 			invoke musicPlayControl, dialogHandle, playButtonState
 		.elseif eax == IDC_LOCAL
+			invoke DialogBoxParam, hInstance, IDD_LIST, 0, offset listProc, 0
 			mov eax, 2 ; TODO: select the file and manage relative data struct
 		.endif
 	.elseif	eax == WM_CLOSE
@@ -69,4 +70,20 @@ playButtonControl proc dialogHandle : dword, state : byte
 	ret
 playButtonControl endp
 
+
+listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dword
+	local wc : WNDCLASSEX
+	mov eax, message
+
+	.if eax == WM_INITDIALOG
+		mov   wc.style, CS_HREDRAW or CS_VREDRAW or CS_DBLCLKS
+		invoke RegisterClassEx, addr wc
+	.elseif eax == WM_COMMAND
+		mov	eax, wParam
+	.elseif	eax == WM_CLOSE
+		invoke	EndDialog, dialogHandle, 0
+	.endif
+	xor eax, eax
+	ret
+listProc endp
 end start
