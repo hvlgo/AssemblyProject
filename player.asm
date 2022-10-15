@@ -28,26 +28,22 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			invoke DialogBoxParam, hInstance, IDD_LIST, 0, offset listProc, 0
 			mov eax, 2 ; TODO: select the file and manage relative data struct
 		.endif
-	; ��ʱ����Ϣ
 	.elseif eax == WM_TIMER					
-		.if playButtonState == _PLAY		; ����״̬��Ҫ�ػ滬��
+		.if playButtonState == _PLAY		
 			invoke changeProgressBar, dialogHandle		
 		.endif
-	;slider��Ϣ
 	.elseif eax == WM_HSCROLL
-		;��ȡ������Ϣ��Slider�Ŀؼ��Ų�����curSlider������
 		invoke GetDlgCtrlID, lParam
 		mov currentSlider, eax
-		mov ax, WORD PTR wParam			;��ȡ��Ϣ���
-		; ��������Ϣ
+		mov ax, WORD PTR wParam			
 		.if currentSlider == IDC_PROGRESS
-			.if ax == SB_ENDSCROLL					;��������
+			.if ax == SB_ENDSCROLL					
 				mov isDraggingProgressBar, 0
-				;invoke SendDlgItemMessage, dialogHandle, IDC_SongMenu, LB_GETCURSEL, 0, 0	;��ȡ��ѡ�е��±�
+				;invoke SendDlgItemMessage, dialogHandle, IDC_SongMenu, LB_GETCURSEL, 0, 0	
 				.if eax != -1				
 					invoke changeTime, dialogHandle	
 				.endif
-			.elseif ax == SB_THUMBTRACK;������Ϣ
+			.elseif ax == SB_THUMBTRACK
 				mov isDraggingProgressBar, 1
 			.endif
 		.endif
@@ -61,7 +57,7 @@ mainProc endp
 dialogInit proc dialogHandle : dword
 	invoke playButtonControl, dialogHandle, _PAUSE
 	mov playButtonState, _BEGIN
-	;���ü�ʱ����ÿ0.5s����һ�μ�ʱ����Ϣ
+
 	invoke SetTimer, dialogHandle, 1, 500, NULL
 	ret
 dialogInit endp
@@ -71,14 +67,13 @@ musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword ; 
 		invoke playButtonControl, dialogHandle, _PLAY
 		invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_SETCURSEL, curSongIndex, 0
 		invoke playSong, dialogHandle, curSongIndex;
+
 		invoke mciSendString, addr playSongCommand, NULL, 0, NULL
 		
 		invoke mciSendString, addr getLengthCommand, addr songLength, 32, NULL	
 		invoke StrToInt, addr songLength
-
 		invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_SETRANGEMAX, 0, eax
-		
-
+	
 		invoke StrToInt, addr songLength
 		mov edx, 0
 		div timeScale
@@ -142,15 +137,14 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	ret
 listProc endp
 
-; �ı������λ��
 changeProgressBar proc dialogHandle: dword
 	local temp: dword
-	.if playButtonState == _PLAY		;����ǰΪ����״̬
-		invoke mciSendString, addr getPositionCommand, addr songPosition, 32, NULL;��ȡ��ǰ����λ��
-		invoke StrToInt, addr songPosition	;��ǰ����ת��int����eax��
+	.if playButtonState == _PLAY		
+		invoke mciSendString, addr getPositionCommand, addr songPosition, 32, NULL
+		invoke StrToInt, addr songPosition	
 		;add eax, 1000
 		mov temp, eax
-		.if isDraggingProgressBar == 0	;����ǰ�û�û����ʱ������ôʵʱ���½�����λ��
+		.if isDraggingProgressBar == 0	
 			invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_SETPOS, 1, temp
 		.endif
 		invoke displayTime, dialogHandle, temp
@@ -158,7 +152,6 @@ changeProgressBar proc dialogHandle: dword
 	ret
 changeProgressBar endp
 
-;������ʾ����
 displayTime proc dialogHandle: dword, currentPosition: dword
 	mov eax, currentPosition
 	mov edx, 0
@@ -173,9 +166,8 @@ displayTime proc dialogHandle: dword, currentPosition: dword
 	ret
 displayTime endp
 
-; ���ݽ�����λ�øı䲥��ʱ��
 changeTime proc dialogHandle: dword
-	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_GETPOS, 0, 0		;TBM_GETPOS��ȡ������λ�õ�eax
+	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_GETPOS, 0, 0		
 	invoke wsprintf, addr mediaCommand, addr setPositionCommand, eax
 	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
 	.if playButtonState == _PLAY	
@@ -195,10 +187,10 @@ playSong proc dialogHandle: dword, index: dword
 	imul ebx, index
 	add edi, ebx					
 
-	invoke printf, addr (songStructure PTR [edi]).songPath
 	invoke wsprintf, addr mediaCommand, addr openSongCommand, addr (songStructure PTR [edi]).songPath
 	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
-	Ret
+
+	ret
 playSong endp
 
 ;import a single song
