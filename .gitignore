@@ -6,3 +6,5 @@ icon_to_use/
 *.vcxproj.filters
 *.vcxproj.user
 *.aps
+*.sln
+.vs/
