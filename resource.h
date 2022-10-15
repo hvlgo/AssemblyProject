@@ -12,6 +12,10 @@
 #define IDC_LIST1                       1007
 #define IDC_SLIDER1                     1008
 #define IDC_Progress                    1008
+#define IDC_PLAY_FOCUSED                1009
+#define IDC_IMPORT                      1010
+#define IDC_BUTTON3                     1011
+#define IDC_DELETE                      1011
 
 // Next default values for new objects
 // 
@@ -19,7 +23,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
