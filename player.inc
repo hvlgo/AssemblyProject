@@ -41,7 +41,7 @@ IDC_PROSHOW EQU 1111
 IDC_PLAY_FOCUSED EQU 1009
 IDC_IMPORT EQU 1010
 IDC_DELETE EQU 1011
-
+IDC_LIST1 EQU 1007
 
 IDI_PLAY EQU 119
 IDI_PAUSE EQU 122
@@ -62,7 +62,7 @@ playButtonState byte 0
 ;song list
 songList songStructure 100 dup(<"0", "0">)
 ;current song index
-currentSongIndex DWORD 0
+currentSongIndex dword 0
 
 ; mci command
 getPositionCommand byte "status currentSong position", 0	;歌曲当前播放位置
@@ -84,7 +84,6 @@ timeMinuteLength dword 0			;当前歌曲长度 min
 timeSecondLength dword 0			;当前歌曲长度 sec
 timeShow byte "%d:%d/%d:%d", 0		;用于进度显示
 songPosition byte 32 dup(0)			;播放进度 ms
-currentSongIndex dword 0			;歌曲在歌单中的下标
 songLength byte 32 dup(0)			;歌曲长度 ms
 
 

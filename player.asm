@@ -68,9 +68,9 @@ dialogInit endp
 
 musicPlayControl proc dialogHandle : dword, state : byte ; TODO: play the music in the music file data struct
 	.if state == _BEGIN
-		invoke playButtonControl, dialogHandle, _PLAY
+		;invoke playButtonControl, dialogHandle, _PLAY
 		;---------------------------
-		invoke SendDlgItemMessage, dialogHandle, IDC_SongMenu, LB_SETCURSEL, currentSongIndex, 0;改变选中项
+		invoke SendDlgItemMessage, dialogHandle, IDC_LIST1, LB_SETCURSEL, currentSongIndex, 0;改变选中项
 		invoke playSong, dialogHandle, currentSongIndex;
 		invoke mciSendString, addr playSongCommand, NULL, 0, NULL
 		
@@ -179,13 +179,7 @@ changeTime endp
 ; 放歌
 playSong proc dialogHandle: dword, index: dword
 	;查找歌曲同级目录下有没有与之同名的lrc文件
-	invoke readLrcFile, dialogHandle, index
-	mov eax, index
-	mov ebx, type songMenu
-	mul ebx
 	
-	invoke wsprintf, addr mediaCommand, addr openSongCommand, addr songMenu[eax]._path
-	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
 	Ret
 playSong endp
 
