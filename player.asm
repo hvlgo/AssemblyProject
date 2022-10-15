@@ -69,13 +69,31 @@ dialogInit endp
 musicPlayControl proc dialogHandle : dword, state : byte ; TODO: play the music in the music file data struct
 	.if state == _BEGIN
 		invoke playButtonControl, dialogHandle, _PLAY
-
+		;---------------------------
+		invoke SendDlgItemMessage, dialogHandle, IDC_SongMenu, LB_SETCURSEL, currentSongIndex, 0;改变选中项
+		invoke playSong, dialogHandle, currentSongIndex;
+		invoke mciSendString, addr playSongCommand, NULL, 0, NULL
+		
+		invoke mciSendString, addr getLengthCommand, addr songLength, 32, NULL	
+		invoke StrToInt, addr songLength
+		; 更改进度条长度
+		invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_SETRANGEMAX, 0, eax
+		
+		;计算当前歌曲的时长（分钟和秒表示）
+		invoke StrToInt, addr songLength
+		mov edx, 0
+		div timeScale
+	
+		mov edx, 0
+		div timeScaleSec
+		mov timeMinuteLength, eax
+		mov timeSecondLength, edx
 	.elseif state == _PAUSE
 		invoke playButtonControl, dialogHandle, _PLAY
-
+		invoke mciSendString, addr resumeSongCommand, NULL, 0, NULL;恢复歌曲播放
 	.else
 		invoke playButtonControl, dialogHandle, _PAUSE
-
+		invoke mciSendString, addr pauseSongCommand, NULL, 0, NULL;暂停歌曲	
 	.endif
 
 	ret
@@ -83,10 +101,10 @@ musicPlayControl endp
 
 playButtonControl proc dialogHandle : dword, state : byte
 	.if state == _PAUSE
-		mov eax, IDI_PAUSE
+		mov eax, IDI_PLAY
 		mov playButtonState, _PAUSE
 	.else
-		mov eax, IDI_PLAY
+		mov eax, IDI_PAUSE
 		mov playButtonState, _PLAY
 	.endif
 
@@ -157,5 +175,18 @@ changeTime proc dialogHandle: dword
 	.endif
 	ret
 changeTime endp
+
+; 放歌
+playSong proc dialogHandle: dword, index: dword
+	;查找歌曲同级目录下有没有与之同名的lrc文件
+	invoke readLrcFile, dialogHandle, index
+	mov eax, index
+	mov ebx, type songMenu
+	mul ebx
+	
+	invoke wsprintf, addr mediaCommand, addr openSongCommand, addr songMenu[eax]._path
+	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
+	Ret
+playSong endp
 
 end start
