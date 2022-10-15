@@ -106,6 +106,18 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		invoke RegisterClassEx, addr wc
 	.elseif eax == WM_COMMAND
 		mov	eax, wParam
+		.if	eax == IDC_IMPORT
+			invoke importSongToList, dialogHandle
+			mov eax, wParam
+		.elseif eax == IDC_DELETE
+			;#############
+			;TODO
+			;#############
+		.elseif eax == IDC_PLAY_FOCUSED
+			;#############
+			;TODO
+			;#############
+		.endif
 	.elseif	eax == WM_CLOSE
 		invoke	EndDialog, dialogHandle, 0
 	.endif
@@ -157,5 +169,43 @@ changeTime proc dialogHandle: dword
 	.endif
 	ret
 changeTime endp
+
+;import a single song
+importSongToList proc dialogHandle: dword
+	invoke	RtlZeroMemory,addr fileDialog,sizeof fileDialog
+	mov	fileDialog.lStructSize,sizeof fileDialog
+	push	dialogHandle
+	pop	fileDialog.hwndOwner
+	mov	fileDialog.lpstrFile,offset lpstrFileNames
+	mov	fileDialog.nMaxFile,SIZEOF lpstrFileNames
+	mov	fileDialog.Flags,OFN_FILEMUSTEXIST or OFN_PATHMUSTEXIST
+	invoke	GetOpenFileName,addr fileDialog
+
+	.if eax
+		;get the parent path and the true path of the selected file(in turn)
+		invoke lstrcpyn, ADDR tempPath, ADDR lpstrFileNames, fileDialog.nFileOffset
+
+		mov esi,OFFSET lpstrFileNames
+		mov ebx,0
+		mov bx,fileDialog.nFileOffset		;not the same size,should change to the same
+		add esi,ebx							;now file name stored in the esi(beginning address)
+		invoke lstrcpy, ADDR tempPath, esi	;now file name stored in the tempPath
+
+		;print the file name
+		invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_ADDSTRING, 0, esi
+
+		mov edi, OFFSET songList
+		mov ebx, SIZEOF songStructure
+		imul ebx, currentTotalSongNumber
+		add edi, ebx					;the  beginning address of the new song
+		invoke lstrcpy, ADDR (songStructure PTR [edi]).songName, ADDR tempPath
+		invoke lstrcpy, ADDR (songStructure PTR [edi]).songPath, ADDR lpstrFileNames
+
+		;total number ++
+		add currentTotalSongNumber,1
+	.endif
+
+	ret
+importSongToList endp
 
 end start

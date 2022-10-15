@@ -11,6 +11,7 @@
 #define IDC_PLAY                        1004
 #define IDC_LOCAL                       1005
 #define IDC_LIST1                       1007
+#define IDC_SONG_LIST                   1007
 #define IDC_Progress                    1008
 #define IDC_PLAY_FOCUSED                1009
 #define IDC_IMPORT                      1010
