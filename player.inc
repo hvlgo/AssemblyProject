@@ -13,6 +13,12 @@ musicPlayControl proto dialogHandle : dword, state : byte
 playButtonControl proto dialogHandle : dword, state : byte
 
 
+;the struct of the song
+songStructure STRUCT
+	songName BYTE 100 DUP(0)
+	songPath BYTE 100 DUP(0)
+songStructure ends
+
 
 .const
 ; sequence id for the ui
@@ -40,6 +46,10 @@ ICON_WIDTH EQU 32
 .data
 ; states of the button
 playButtonState byte 0
+;song list
+songList songStructure 100 dup(<"0", "0">)
+;current song index
+currentSongIndex DWORD 0
 
 .data?
 ; the handle of the exec file itself
