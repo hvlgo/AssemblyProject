@@ -5,14 +5,19 @@ include kernel32.inc
 include gdi32.inc
 include winmm.inc
 include shlwapi.inc
+include Comdlg32.inc
 
+
+includelib	Comdlg32.lib
 includelib winmm.lib
 includelib shlwapi.lib
-INCLUDELIB	user32.lib
-INCLUDELIB	kernel32.lib
-INCLUDELIB gdi32.lib
+includelib	user32.lib
+includelib	kernel32.lib
+includelib gdi32.lib
+includelib msvcrt.lib
 
 ; function declare
+printf   proto C :ptr sbyte, :VARARG
 mainProc proto dialogHandle:dword,message:dword, wParam:dword,lParam:dword
 listProc proto dialogHandle:dword,message:dword, wParam:dword,lParam:dword
 dialogInit proto dialogHandle : dword
@@ -21,6 +26,7 @@ playButtonControl proto dialogHandle : dword, state : byte
 changeProgressBar proto dialogHandle: dword
 displayTime proto dialogHandle: dword, currentPosition: dword
 changeTime proto dialogHandle: dword
+importSongToList proto dialogHandle: dword
 playSong proto dialogHandle: dword, index: dword
 
 ;the struct of the song
@@ -36,6 +42,7 @@ IDD_MAIN EQU 101
 IDD_LIST EQU 123
 IDC_PLAY EQU 1004
 IDC_LOCAL EQU 1005
+IDC_SONG_LIST EQU 1007
 IDC_PROGRESS EQU 1008
 IDC_PROSHOW EQU 1111
 IDC_PLAY_FOCUSED EQU 1009
@@ -61,31 +68,43 @@ playButtonState byte 0
 
 ;song list
 songList songStructure 100 dup(<"0", "0">)
+;total number of current songs 
+currentTotalSongNumber DWORD 0
 ;current song index
-currentSongIndex dword 0
+currentSongIndex DWORD 0
+;temporarily store the filename
+tempName BYTE 100 dup(0)
+
+;open the file dialog
+fileDialog OPENFILENAME<>
+lpstrFileNames BYTE 8000 DUP(0)
+tempPath BYTE 100 DUP(0)
 
 ; mci command
-getPositionCommand byte "status currentSong position", 0	;¸èÇúµ±Ç°²¥·ÅÎ»ÖÃ
-setPositionCommand byte "seek currentSong to %d", 0			;ÉèÖÃ¸èÇúµ±Ç°²¥·ÅÎ»ÖÃ
-playSongCommand byte "play currentSong", 0					;²¥·Å¸èÇú
-pauseSongCommand byte "pause currentSong",0					;ÔÝÍ£¸èÇú
-resumeSongCommand byte "resume currentSong",0				;»Ö¸´¸èÇú²¥·Å
-getLengthCommand byte "status currentSong length", 0		;»ñÈ¡¸èÇú³¤¶È
-openSongCommand byte 'open "%s" alias currentSong type mpegvideo',0;´ò¿ª¸èÇú
+getPositionCommand byte "status currentSong position", 0	;ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
+setPositionCommand byte "seek currentSong to %d", 0			;ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
+playSongCommand byte "play currentSong", 0					;ï¿½ï¿½ï¿½Å¸ï¿½ï¿½ï¿½
+pauseSongCommand byte "pause currentSong",0					;ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½
+resumeSongCommand byte "resume currentSong",0				;ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+getLengthCommand byte "status currentSong length", 0		;ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+openSongCommand byte 'open "%s" alias currentSong type mpegvideo',0;ï¿½ò¿ª¸ï¿½ï¿½ï¿½
 
 ; value
-isDraggingProgressBar dword 0		;ÊÇ·ñÕýÔÚÍÏ¶¯½ø¶ÈÌõ£¬0-·ñ£¬1-ÊÇ
-currentSlider dword ?				;µ±Ç°·¢ËÍÏûÏ¢µÄslider
-timeScale dword 1000				;ÓÃÓÚ½ø¶ÈÏÔÊ¾
-timeScaleSec dword 60				;ÓÃÓÚ½ø¶ÈÏÔÊ¾
-timeMinutePosition dword 0			;µ±Ç°¸èÇúÎ»ÖÃ min
-timeSecondPosition dword 0			;µ±Ç°¸èÇúÎ»ÖÃ sec
-timeMinuteLength dword 0			;µ±Ç°¸èÇú³¤¶È min
-timeSecondLength dword 0			;µ±Ç°¸èÇú³¤¶È sec
-timeShow byte "%d:%d/%d:%d", 0		;ÓÃÓÚ½ø¶ÈÏÔÊ¾
-songPosition byte 32 dup(0)			;²¥·Å½ø¶È ms
-songLength byte 32 dup(0)			;¸èÇú³¤¶È ms
+isDraggingProgressBar dword 0		;ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0-ï¿½ï¿½1-ï¿½ï¿½
+currentSlider dword ?				;ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½slider
+timeScale dword 1000				;ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+timeScaleSec dword 60				;ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+timeMinutePosition dword 0			;ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ min
+timeSecondPosition dword 0			;ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ sec
+timeMinuteLength dword 0			;ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ min
+timeSecondLength dword 0			;ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ sec
+timeShow byte "%d:%d/%d:%d", 0		;ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+songPosition byte 32 dup(0)			;ï¿½ï¿½ï¿½Å½ï¿½ï¿½ï¿½ ms
+songLength byte 32 dup(0)			;ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ms
 
+;test
+ansMsg BYTE "%d"
+strMsg BYTE "%c"
 
 .data?
 ; the handle of the exec file itself
