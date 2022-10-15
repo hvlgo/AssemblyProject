@@ -23,7 +23,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	.elseif eax == WM_COMMAND
 		mov	eax, wParam
 		.if	eax == IDC_PLAY
-			invoke musicPlayControl, dialogHandle, playButtonState
+			invoke musicPlayControl, dialogHandle, playButtonState, 0
 		.elseif eax == IDC_LOCAL
 			invoke DialogBoxParam, hInstance, IDD_LIST, 0, offset listProc, 0
 			mov eax, 2 ; TODO: select the file and manage relative data struct
@@ -44,7 +44,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			.if ax == SB_ENDSCROLL					;��������
 				mov isDraggingProgressBar, 0
 				;invoke SendDlgItemMessage, dialogHandle, IDC_SongMenu, LB_GETCURSEL, 0, 0	;��ȡ��ѡ�е��±�
-				.if eax != -1				;��ǰ�и�����ѡ�У�����mcisendstring�����������
+				.if eax != -1				
 					invoke changeTime, dialogHandle	
 				.endif
 			.elseif ax == SB_THUMBTRACK;������Ϣ
@@ -60,26 +60,25 @@ mainProc endp
 
 dialogInit proc dialogHandle : dword
 	invoke playButtonControl, dialogHandle, _PAUSE
-
+	mov playButtonState, _BEGIN
 	;���ü�ʱ����ÿ0.5s����һ�μ�ʱ����Ϣ
 	invoke SetTimer, dialogHandle, 1, 500, NULL
 	ret
 dialogInit endp
 
-musicPlayControl proc dialogHandle : dword, state : byte ; TODO: play the music in the music file data struct
+musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword ; TODO: play the music in the music file data struct
 	.if state == _BEGIN
-		;invoke playButtonControl, dialogHandle, _PLAY
-		;---------------------------
-		invoke SendDlgItemMessage, dialogHandle, IDC_LIST1, LB_SETCURSEL, currentSongIndex, 0;�ı�ѡ����
-		invoke playSong, dialogHandle, currentSongIndex;
+		invoke playButtonControl, dialogHandle, _PLAY
+		invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_SETCURSEL, curSongIndex, 0
+		invoke playSong, dialogHandle, curSongIndex;
 		invoke mciSendString, addr playSongCommand, NULL, 0, NULL
 		
 		invoke mciSendString, addr getLengthCommand, addr songLength, 32, NULL	
 		invoke StrToInt, addr songLength
-		; ���Ľ���������
+
 		invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_SETRANGEMAX, 0, eax
 		
-		;���㵱ǰ������ʱ�������Ӻ����ʾ��
+
 		invoke StrToInt, addr songLength
 		mov edx, 0
 		div timeScale
@@ -90,10 +89,10 @@ musicPlayControl proc dialogHandle : dword, state : byte ; TODO: play the music 
 		mov timeSecondLength, edx
 	.elseif state == _PAUSE
 		invoke playButtonControl, dialogHandle, _PLAY
-		invoke mciSendString, addr resumeSongCommand, NULL, 0, NULL;�ָ���������
+		invoke mciSendString, addr resumeSongCommand, NULL, 0, NULL
 	.else
 		invoke playButtonControl, dialogHandle, _PAUSE
-		invoke mciSendString, addr pauseSongCommand, NULL, 0, NULL;��ͣ����	
+		invoke mciSendString, addr pauseSongCommand, NULL, 0, NULL
 	.endif
 
 	ret
@@ -188,10 +187,17 @@ changeTime proc dialogHandle: dword
 	ret
 changeTime endp
 
-; �Ÿ�
+
 playSong proc dialogHandle: dword, index: dword
-	;���Ҹ���ͬ��Ŀ¼����û����֮ͬ����lrc�ļ�
-	
+	; accept path to open the song
+	mov edi, OFFSET songList
+	mov ebx, SIZEOF songStructure
+	imul ebx, index
+	add edi, ebx					
+
+	invoke printf, addr (songStructure PTR [edi]).songPath
+	invoke wsprintf, addr mediaCommand, addr openSongCommand, addr (songStructure PTR [edi]).songPath
+	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
 	Ret
 playSong endp
 

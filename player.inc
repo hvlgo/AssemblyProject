@@ -21,7 +21,7 @@ printf   proto C :ptr sbyte, :VARARG
 mainProc proto dialogHandle:dword,message:dword, wParam:dword,lParam:dword
 listProc proto dialogHandle:dword,message:dword, wParam:dword,lParam:dword
 dialogInit proto dialogHandle : dword
-musicPlayControl proto dialogHandle : dword, state : byte
+musicPlayControl proto dialogHandle : dword, state : byte, curSongIndex: dword
 playButtonControl proto dialogHandle : dword, state : byte
 changeProgressBar proto dialogHandle: dword
 displayTime proto dialogHandle: dword, currentPosition: dword
