@@ -81,26 +81,26 @@ lpstrFileNames BYTE 8000 DUP(0)
 tempPath BYTE 100 DUP(0)
 
 ; mci command
-getPositionCommand byte "status currentSong position", 0	;������ǰ����λ��
-setPositionCommand byte "seek currentSong to %d", 0			;���ø�����ǰ����λ��
-playSongCommand byte "play currentSong", 0					;���Ÿ���
-pauseSongCommand byte "pause currentSong",0					;��ͣ����
-resumeSongCommand byte "resume currentSong",0				;�ָ���������
-getLengthCommand byte "status currentSong length", 0		;��ȡ��������
-openSongCommand byte 'open "%s" alias currentSong type mpegvideo',0;�򿪸���
+getPositionCommand byte "status currentSong position", 0	
+setPositionCommand byte "seek currentSong to %d", 0			
+playSongCommand byte "play currentSong", 0					
+pauseSongCommand byte "pause currentSong",0					
+resumeSongCommand byte "resume currentSong",0				
+getLengthCommand byte "status currentSong length", 0		
+openSongCommand byte 'open "%s" alias currentSong type mpegvideo',0
 
 ; value
-isDraggingProgressBar dword 0		;�Ƿ������϶���������0-��1-��
-currentSlider dword ?				;��ǰ������Ϣ��slider
-timeScale dword 1000				;���ڽ�����ʾ
-timeScaleSec dword 60				;���ڽ�����ʾ
-timeMinutePosition dword 0			;��ǰ����λ�� min
-timeSecondPosition dword 0			;��ǰ����λ�� sec
-timeMinuteLength dword 0			;��ǰ�������� min
-timeSecondLength dword 0			;��ǰ�������� sec
-timeShow byte "%d:%d/%d:%d", 0		;���ڽ�����ʾ
-songPosition byte 32 dup(0)			;���Ž��� ms
-songLength byte 32 dup(0)			;�������� ms
+isDraggingProgressBar dword 0		
+currentSlider dword ?				
+timeScale dword 1000				
+timeScaleSec dword 60				
+timeMinutePosition dword 0			
+timeSecondPosition dword 0			
+timeMinuteLength dword 0			
+timeSecondLength dword 0			
+timeShow byte "%d:%d/%d:%d", 0		
+songPosition byte 32 dup(0)			
+songLength byte 32 dup(0)			
 
 ;test
 ansMsg BYTE "%d"
