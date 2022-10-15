@@ -1,0 +1,10 @@
+Debug/
+Release/
+x64/
+icon_to_use/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.aps
+*.sln
+.vs/
