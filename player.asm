@@ -36,17 +36,19 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	.elseif eax == WM_TIMER					
 		.if playButtonState == _PLAY		
 			invoke changeProgressBar, dialogHandle
-			invoke checkPlay, dialogHandle
+			invoke checkPlay, dialogHandle	; check if finished
 		.endif
 	.elseif eax == WM_HSCROLL
 		invoke GetDlgCtrlID, lParam
 		mov currentSlider, eax
 		mov ax, WORD PTR wParam			
+		; mov progress bar
 		.if currentSlider == IDC_PROGRESS
+			; end move bar
 			.if ax == SB_ENDSCROLL					
 				mov isDraggingProgressBar, 0
-				;invoke SendDlgItemMessage, dialogHandle, IDC_SongMenu, LB_GETCURSEL, 0, 0	
-				.if eax != -1				
+				; song exist
+				.if currentTotalSongNumber != 0				
 					invoke changeTime, dialogHandle	
 				.endif
 			.elseif ax == SB_THUMBTRACK
@@ -203,11 +205,12 @@ changeTime proc dialogHandle: dword
 	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_GETPOS, 0, 0		
 	invoke wsprintf, addr mediaCommand, addr setPositionCommand, eax
 	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
+
 	.if playButtonState == _PLAY	
 		invoke mciSendString, addr playSongCommand, NULL, 0, NULL
 	.elseif playButtonState == _PAUSE
 		invoke mciSendString, addr playSongCommand, NULL, 0, NULL
-		mov playButtonState, _PLAY
+		invoke mciSendString, addr pauseSongCommand, NULL, 0, NULL
 	.endif
 	ret
 changeTime endp
