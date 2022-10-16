@@ -29,6 +29,9 @@ changeTime proto dialogHandle: dword
 importSongToList proto dialogHandle: dword
 playSong proto dialogHandle: dword, index: dword
 listDialogInit proto dialogHandle:dword
+changeSong proto dialogHandle: dword, newSongIndex: dword
+closeSong proto dialogHandle: dword
+checkPlay proto dialogHandle: dword
 
 ;the struct of the song
 songStructure STRUCT
@@ -89,6 +92,7 @@ pauseSongCommand byte "pause currentSong",0
 resumeSongCommand byte "resume currentSong",0				
 getLengthCommand byte "status currentSong length", 0		
 openSongCommand byte 'open "%s" alias currentSong type mpegvideo',0
+closeSongCommand byte "close currentSong",0  
 
 ; value
 isDraggingProgressBar dword 0		

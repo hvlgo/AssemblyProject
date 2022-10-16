@@ -26,6 +26,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		mov	eax, wParam
 		.if	eax == IDC_PLAY
 			.if currentTotalSongNumber != 0
+				
 				invoke musicPlayControl, dialogHandle, playButtonState, 0
 			.endif
 		.elseif eax == IDC_LOCAL
@@ -34,7 +35,8 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		.endif
 	.elseif eax == WM_TIMER					
 		.if playButtonState == _PLAY		
-			invoke changeProgressBar, dialogHandle		
+			invoke changeProgressBar, dialogHandle
+			invoke checkPlay, dialogHandle
 		.endif
 	.elseif eax == WM_HSCROLL
 		invoke GetDlgCtrlID, lParam
@@ -61,13 +63,14 @@ mainProc endp
 dialogInit proc dialogHandle : dword
 	invoke playButtonControl, dialogHandle, _PAUSE
 	mov playButtonState, _BEGIN
-
+	mov currentSongIndex, 0
 	invoke SetTimer, dialogHandle, 1, 500, NULL
 	ret
 dialogInit endp
 
 musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword ; TODO: play the music in the music file data struct
 	.if state == _BEGIN
+		invoke closeSong, dialogHandle
 		invoke playButtonControl, dialogHandle, _PLAY
 		invoke playSong, dialogHandle, curSongIndex;
 
@@ -137,6 +140,7 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			shr eax,16
 			.if ax == LBN_SELCHANGE	;选中项发生改变
 				invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
+				mov currentSongIndex, eax
 				invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
 				invoke	EndDialog, dialogHandle, 0
 			.endif
@@ -208,7 +212,7 @@ changeTime proc dialogHandle: dword
 	ret
 changeTime endp
 
-
+; play song
 playSong proc dialogHandle: dword, index: dword
 	; accept path to open the song
 	mov edi, OFFSET songList
@@ -221,6 +225,60 @@ playSong proc dialogHandle: dword, index: dword
 
 	ret
 playSong endp
+
+; close song
+closeSong proc uses eax dialogHandle: dword
+	invoke mciSendString, ADDR closeSongCommand, NULL, 0, NULL
+	
+	ret
+closeSong endp
+
+; change song
+changeSong proc dialogHandle: dword, newSongIndex: dword
+	invoke closeSong, dialogHandle	; close the song before
+
+	mov eax, newSongIndex
+	mov currentSongIndex, eax	
+	invoke playSong, dialogHandle, currentSongIndex	
+	invoke mciSendString, ADDR playSongCommand, NULL, 0, NULL
+	
+	; set song length
+	invoke mciSendString, addr getLengthCommand, addr songLength, 32, NULL
+	invoke StrToInt, addr songLength
+	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_SETRANGEMAX, 0, eax
+	
+	invoke StrToInt, addr songLength
+	mov edx, 0
+	div timeScale
+	
+	mov edx, 0
+	div timeScaleSec
+	mov timeMinuteLength, eax
+	mov timeSecondLength, edx
+	ret
+changeSong endp
+
+; check if the song has finished
+checkPlay proc dialogHandle: dword
+	local temp: dword
+
+	.if playButtonState == _PLAY
+		invoke StrToInt, addr songLength
+		mov temp, eax
+		invoke StrToInt, addr songPosition
+		.if eax >= temp		; the song is over
+		; TODO add different play mode
+		; TODO need new index
+			inc currentSongIndex
+			mov ebx, currentSongIndex
+			.if ebx > currentTotalSongNumber
+				mov currentSongIndex, 0
+			.endif
+			invoke changeSong, dialogHandle, currentSongIndex
+		.endif
+	.endif
+	Ret
+checkPlay endp
 
 ;import a single song
 importSongToList proc dialogHandle: dword
