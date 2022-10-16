@@ -25,7 +25,9 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	.elseif eax == WM_COMMAND
 		mov	eax, wParam
 		.if	eax == IDC_PLAY
-			invoke musicPlayControl, dialogHandle, playButtonState, 0
+			.if currentTotalSongNumber != 0
+				invoke musicPlayControl, dialogHandle, playButtonState, 0
+			.endif
 		.elseif eax == IDC_LOCAL
 			invoke DialogBoxParam, hInstance, IDD_LIST, 0, offset listProc, 0
 			;mov eax, 2 ; TODO: select the file and manage relative data struct
