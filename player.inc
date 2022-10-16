@@ -28,11 +28,12 @@ displayTime proto dialogHandle: dword, currentPosition: dword
 changeTime proto dialogHandle: dword
 importSongToList proto dialogHandle: dword
 playSong proto dialogHandle: dword, index: dword
+listDialogInit proto dialogHandle:dword
 
 ;the struct of the song
 songStructure STRUCT
-	songName BYTE 100 DUP(0)
-	songPath BYTE 100 DUP(0)
+	songName BYTE 1000 DUP(0)
+	songPath BYTE 1000 DUP(0)
 songStructure ends
 
 
@@ -73,12 +74,12 @@ currentTotalSongNumber DWORD 0
 ;current song index
 currentSongIndex DWORD 0
 ;temporarily store the filename
-tempName BYTE 100 dup(0)
+tempName BYTE 1000 dup(0)
 
 ;open the file dialog
 fileDialog OPENFILENAME<>
 lpstrFileNames BYTE 8000 DUP(0)
-tempPath BYTE 100 DUP(0)
+tempPath BYTE 1000 DUP(0)
 
 ; mci command
 getPositionCommand byte "status currentSong position", 0	
@@ -102,8 +103,12 @@ timeShow byte "%d:%d/%d:%d", 0
 songPosition byte 32 dup(0)			
 songLength byte 32 dup(0)			
 
+;handle
+mainHandle dword 0
+
 ;test
 ansMsg BYTE "%d"
+changeRowMsg BYTE 0ah, 0dh, 0
 strMsg BYTE "%c"
 
 .data?

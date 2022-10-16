@@ -14,6 +14,8 @@ start:
 
 mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dword
 	local wc : WNDCLASSEX
+	mov eax,dialogHandle
+	mov mainHandle,eax
 	mov eax, message
 
 	.if eax == WM_INITDIALOG
@@ -26,7 +28,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			invoke musicPlayControl, dialogHandle, playButtonState, 0
 		.elseif eax == IDC_LOCAL
 			invoke DialogBoxParam, hInstance, IDD_LIST, 0, offset listProc, 0
-			mov eax, 2 ; TODO: select the file and manage relative data struct
+			;mov eax, 2 ; TODO: select the file and manage relative data struct
 		.endif
 	.elseif eax == WM_TIMER					
 		.if playButtonState == _PLAY		
@@ -65,7 +67,6 @@ dialogInit endp
 musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword ; TODO: play the music in the music file data struct
 	.if state == _BEGIN
 		invoke playButtonControl, dialogHandle, _PLAY
-		invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_SETCURSEL, curSongIndex, 0
 		invoke playSong, dialogHandle, curSongIndex;
 
 		invoke mciSendString, addr playSongCommand, NULL, 0, NULL
@@ -116,6 +117,7 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	.if eax == WM_INITDIALOG
 		mov   wc.style, CS_HREDRAW or CS_VREDRAW or CS_DBLCLKS
 		invoke RegisterClassEx, addr wc
+		invoke listDialogInit, dialogHandle
 	.elseif eax == WM_COMMAND
 		mov	eax, wParam
 		.if	eax == IDC_IMPORT
@@ -129,6 +131,13 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			;#############
 			;TODO
 			;#############
+		.elseif ax == IDC_SONG_LIST
+			shr eax,16
+			.if ax == LBN_SELCHANGE	;选中项发生改变
+				invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
+				invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
+				invoke	EndDialog, dialogHandle, 0
+			.endif
 		.endif
 	.elseif	eax == WM_CLOSE
 		invoke	EndDialog, dialogHandle, 0
@@ -136,6 +145,24 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	xor eax, eax
 	ret
 listProc endp
+
+;print the song list
+listDialogInit proc dialogHandle: dword
+	mov ebx,0
+	mov ecx,currentTotalSongNumber
+	.WHILE ecx != 0
+		mov edi, OFFSET songList
+		mov edx, SIZEOF songStructure
+		imul edx, ebx
+		add edi, edx
+		pushad
+		invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_ADDSTRING, 0, ADDR (songStructure PTR [edi]).songName
+		popad
+		add ebx,1
+		sub ecx,1
+	.ENDW
+	ret
+listDialogInit endp
 
 changeProgressBar proc dialogHandle: dword
 	local temp: dword
