@@ -103,7 +103,7 @@ timeMinutePosition dword 0
 timeSecondPosition dword 0			
 timeMinuteLength dword 0			
 timeSecondLength dword 0			
-timeShow byte "%d:%002d/%d:%d", 0		
+timeShow byte "%02d:%02d/%02d:%02d", 0		
 songPosition byte 32 dup(0)			
 songLength byte 32 dup(0)			
 

@@ -12,6 +12,14 @@ start:
 	invoke DialogBoxParam, hInstance,IDD_MAIN, 0, offset mainProc, 0
 	invoke ExitProcess, 0
 
+;######################################################
+;the main dialog callback function
+;param:
+;	dialogHandle: the handle of the main dialog
+;	message: the user message sent to the dialog
+;	wParam: the addtional info of the message
+;	lParam: the addtional info of the message
+;######################################################
 mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dword
 	local wc : WNDCLASSEX
 	mov eax,dialogHandle
@@ -22,6 +30,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		mov   wc.style, CS_HREDRAW or CS_VREDRAW or CS_DBLCLKS
 		invoke RegisterClassEx, addr wc
 		invoke dialogInit, dialogHandle
+
 	.elseif eax == WM_COMMAND
 		mov	eax, wParam
 		.if	eax == IDC_PLAY
@@ -33,7 +42,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			invoke DialogBoxParam, hInstance, IDD_LIST, 0, offset listProc, 0
 			;mov eax, 2 ; TODO: select the file and manage relative data struct
 		.endif
-	.elseif eax == WM_TIMER					
+	.elseif eax == WM_TIMER	
 		.if playButtonState == _PLAY		
 			invoke changeProgressBar, dialogHandle
 			invoke checkPlay, dialogHandle	; check if finished
@@ -62,6 +71,11 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	ret
 mainProc endp
 
+;######################################################
+;the main dialog init function, prepare the relative variables
+;param:
+;	dialogHandle: the handle of the main dialog
+;######################################################
 dialogInit proc dialogHandle : dword
 	invoke playButtonControl, dialogHandle, _PAUSE
 	mov playButtonState, _BEGIN
@@ -70,6 +84,13 @@ dialogInit proc dialogHandle : dword
 	ret
 dialogInit endp
 
+;######################################################
+;the music play control function
+;param:
+;	dialogHandle: the handle of the main dialog
+;	state: the state of the music (with currentSongIndex) before the button pushed
+;	curSongIndex: the index of the music in the list
+;######################################################
 musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword ; TODO: play the music in the music file data struct
 	.if state == _BEGIN
 		invoke closeSong, dialogHandle
@@ -101,6 +122,12 @@ musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword ; 
 	ret
 musicPlayControl endp
 
+;######################################################
+;the play button icon control function
+;param:
+;	dialogHandle: the handle of the main dialog
+;	state: the state of the music (with currentSongIndex) you wish after the button pushed
+;######################################################
 playButtonControl proc dialogHandle : dword, state : byte
 	.if state == _PAUSE
 		mov eax, IDI_PLAY
@@ -116,7 +143,14 @@ playButtonControl proc dialogHandle : dword, state : byte
 	ret
 playButtonControl endp
 
-
+;######################################################
+;the list dialog callback function
+;param:
+;	dialogHandle: the handle of the music list dialog
+;	message: the user message sent to the dialog
+;	wParam: the addtional info of the message
+;	lParam: the addtional info of the message
+;######################################################
 listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dword
 	local wc : WNDCLASSEX
 	mov eax, message
@@ -154,7 +188,11 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	ret
 listProc endp
 
-;print the song list
+;######################################################
+;print the music list
+;param:
+;	dialogHandle: the handle of the music list dialog
+;######################################################
 listDialogInit proc dialogHandle: dword
 	mov ebx,0
 	mov ecx,currentTotalSongNumber
@@ -172,6 +210,11 @@ listDialogInit proc dialogHandle: dword
 	ret
 listDialogInit endp
 
+;######################################################
+;the Progress Bar control function, change the progess bar after the timer event
+;param:
+;	dialogHandle: the handle of the music list dialog
+;######################################################
 changeProgressBar proc dialogHandle: dword
 	local temp: dword
 	.if playButtonState == _PLAY		
@@ -187,6 +230,12 @@ changeProgressBar proc dialogHandle: dword
 	ret
 changeProgressBar endp
 
+;######################################################
+;the time display control function, change the time text according to time
+;param:
+;	dialogHandle: the handle of the music list dialog
+;	currentPosition: the time of the music now
+;######################################################
 displayTime proc dialogHandle: dword, currentPosition: dword
 	mov eax, currentPosition
 	mov edx, 0
@@ -201,6 +250,11 @@ displayTime proc dialogHandle: dword, currentPosition: dword
 	ret
 displayTime endp
 
+;######################################################
+;the time control function, change the time after the bar scolled
+;param:
+;	dialogHandle: the handle of the music list dialog
+;######################################################
 changeTime proc dialogHandle: dword
 	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_GETPOS, 0, 0		
 	invoke wsprintf, addr mediaCommand, addr setPositionCommand, eax
@@ -215,7 +269,12 @@ changeTime proc dialogHandle: dword
 	ret
 changeTime endp
 
-; play song
+;######################################################
+;the play control function, open the music of the index given
+;param:
+;	dialogHandle: the handle of the music list dialog
+;	index: the index of the music of list
+;######################################################
 playSong proc dialogHandle: dword, index: dword
 	; accept path to open the song
 	mov edi, OFFSET songList
@@ -229,14 +288,23 @@ playSong proc dialogHandle: dword, index: dword
 	ret
 playSong endp
 
-; close song
+;######################################################
+;the play control function, close the current music
+;param:
+;	dialogHandle: the handle of the music list dialog
+;######################################################
 closeSong proc uses eax dialogHandle: dword
 	invoke mciSendString, ADDR closeSongCommand, NULL, 0, NULL
 	
 	ret
 closeSong endp
 
-; change song
+;######################################################
+;the play control function, change music when the current music is over
+;param:
+;	dialogHandle: the handle of the music list dialog
+;	newSongIndex: the index of the next music of list
+;######################################################
 changeSong proc dialogHandle: dword, newSongIndex: dword
 	invoke closeSong, dialogHandle	; close the song before
 
@@ -261,7 +329,12 @@ changeSong proc dialogHandle: dword, newSongIndex: dword
 	ret
 changeSong endp
 
-; check if the song has finished
+;######################################################
+;check the music over or not, call after the timer event
+;param:
+;	dialogHandle: the handle of the music list dialog
+;	newSongIndex: the index of the next music of list
+;######################################################
 checkPlay proc dialogHandle: dword
 	local temp: dword
 
@@ -283,7 +356,11 @@ checkPlay proc dialogHandle: dword
 	Ret
 checkPlay endp
 
-;import a single song
+;######################################################
+;add a music to the list after the import button pushed
+;param:
+;	dialogHandle: the handle of the music list dialog
+;######################################################
 importSongToList proc dialogHandle: dword
 	invoke	RtlZeroMemory,addr fileDialog,sizeof fileDialog
 	mov	fileDialog.lStructSize,sizeof fileDialog
