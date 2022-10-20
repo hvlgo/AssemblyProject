@@ -8,4 +8,6 @@ images/
 *.vcxproj.user
 *.aps
 *.sln
+*.md
+*.pdf
 .vs/
