@@ -32,6 +32,8 @@ listDialogInit proto dialogHandle:dword
 changeSong proto dialogHandle: dword, newSongIndex: dword
 closeSong proto dialogHandle: dword
 checkPlay proto dialogHandle: dword
+nextIndex proto curIndex : dword
+preIndex proto curIndex : dword
 
 ;the struct of the song
 songStructure STRUCT
@@ -53,6 +55,8 @@ IDC_PLAY_FOCUSED EQU 1009
 IDC_IMPORT EQU 1010
 IDC_DELETE EQU 1011
 IDC_LIST1 EQU 1007
+IDC_PRE EQU 1010
+IDC_NEXT EQU 1011
 
 IDI_PLAY EQU 119
 IDI_PAUSE EQU 122
@@ -73,9 +77,9 @@ playButtonState byte 0
 ;song list
 songList songStructure 100 dup(<"0", "0">)
 ;total number of current songs 
-currentTotalSongNumber DWORD 0
+currentTotalSongNumber dword 0
 ;current song index
-currentSongIndex DWORD 0
+currentSongIndex dword 0
 ;temporarily store the filename
 tempName BYTE 1000 dup(0)
 

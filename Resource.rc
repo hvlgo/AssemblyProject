@@ -55,7 +55,7 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_MAIN, DIALOG
     BEGIN
-        BOTTOMMARGIN, 95
+        RIGHTMARGIN, 491
     END
 
     IDD_LIST, DIALOG
@@ -78,6 +78,10 @@ IDI_LOCAL               ICON                    "icon\\view-column.ico"
 
 IDI_PAUSE               ICON                    "icon\\pause.ico"
 
+IDI_PRE                 ICON                    "icon\\pre.ico"
+
+IDI_NEXT                ICON                    "icon\\next.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -99,19 +103,18 @@ END
 //
 // Dialog
 //
-#ifndef TBS_NOTIFYBEFOREMOVE
-#define TBS_NOTIFYBEFOREMOVE 0x0800
-#endif
 
-IDD_MAIN DIALOGEX 0, 0, 491, 107
+IDD_MAIN DIALOGEX 0, 0, 493, 99
 STYLE DS_SETFONT | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "MusicPlayer"
 FONT 7, "Î¢ÈíÑÅºÚ", 400, 0, 0x0
 BEGIN
-    ICON            IDI_LOCAL,IDC_LOCAL,466,71,20,20,SS_NOTIFY
-    PUSHBUTTON      "Button2",IDC_PLAY,6,73,20,18,BS_ICON
+    ICON            IDI_LOCAL,IDC_LOCAL,458,73,20,20,SS_NOTIFY
+    PUSHBUTTON      "Button2",IDC_PLAY,14,73,20,18,BS_ICON
     CONTROL         "",IDC_Progress,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | TBS_NOTIFYBEFOREMOVE | WS_TABSTOP,10,44,423,15
     LTEXT           "00.00/00.00",IDC_PROSHOW,441,46,44,20
+    ICON            IDI_PRE,IDC_PRE,41,73,20,20,SS_NOTIFY
+    ICON            IDI_NEXT,IDC_NEXT,69,73,20,20,SS_NOTIFY
 END
 
 IDD_LIST DIALOGEX 0, 0, 310, 177

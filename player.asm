@@ -35,12 +35,24 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		mov	eax, wParam
 		.if	eax == IDC_PLAY
 			.if currentTotalSongNumber != 0
-				
 				invoke musicPlayControl, dialogHandle, playButtonState, 0
 			.endif
 		.elseif eax == IDC_LOCAL
 			invoke DialogBoxParam, hInstance, IDD_LIST, 0, offset listProc, 0
-			;mov eax, 2 ; TODO: select the file and manage relative data struct
+		.elseif eax == IDC_PRE
+			.if currentTotalSongNumber !=  0
+				invoke preIndex, currentSongIndex
+				mov currentSongIndex, eax
+				mov playButtonState, _BEGIN
+				invoke musicPlayControl, dialogHandle, playButtonState, currentSongIndex
+			.endif
+		.elseif eax == IDC_NEXT
+			.if currentTotalSongNumber != 0
+				invoke nextIndex, currentSongIndex
+				mov currentSongIndex, eax
+				mov playButtonState, _BEGIN
+				invoke musicPlayControl, dialogHandle, playButtonState, currentSongIndex
+			.endif
 		.endif
 	.elseif eax == WM_TIMER	
 		.if playButtonState == _PLAY		
@@ -91,7 +103,7 @@ dialogInit endp
 ;	state: the state of the music (with currentSongIndex) before the button pushed
 ;	curSongIndex: the index of the music in the list
 ;######################################################
-musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword ; TODO: play the music in the music file data struct
+musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword
 	.if state == _BEGIN
 		invoke closeSong, dialogHandle
 		invoke playButtonControl, dialogHandle, _PLAY
@@ -345,11 +357,8 @@ checkPlay proc dialogHandle: dword
 		.if eax >= temp		; the song is over
 		; TODO add different play mode
 		; TODO need new index
-			inc currentSongIndex
-			mov ebx, currentSongIndex
-			.if ebx > currentTotalSongNumber
-				mov currentSongIndex, 0
-			.endif
+			invoke nextIndex, currentSongIndex
+			mov currentSongIndex, eax
 			invoke changeSong, dialogHandle, currentSongIndex
 		.endif
 	.endif
@@ -397,5 +406,27 @@ importSongToList proc dialogHandle: dword
 
 	ret
 importSongToList endp
+
+nextIndex proc curIndex : dword
+	inc curIndex
+	mov ebx, curIndex
+	.if ebx >= currentTotalSongNumber
+		mov curIndex, 0
+	.endif
+	mov eax, curIndex
+	ret
+nextIndex endp
+
+preIndex proc curIndex : dword
+	mov ebx, curIndex
+	.if ebx == 0
+		mov eax, currentTotalSongNumber
+		dec eax
+		ret
+	.endif
+	dec curIndex
+	mov eax, curIndex
+	ret
+preIndex endp
 
 end start
