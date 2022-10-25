@@ -218,7 +218,7 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			;#############
 		.elseif ax == IDC_SONG_LIST
 			shr eax,16
-			.if ax == LBN_SELCHANGE	;ѡ������ı�
+			.if ax == LBN_SELCHANGE	
 				invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
 				mov currentSongIndex, eax
 				invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song

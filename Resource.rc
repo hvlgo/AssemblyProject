@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½å£¬ï¿½Ð¹ï¿½) resources
+// ÖÐÎÄ(¼òÌå£¬ÖÐ¹ú) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -55,7 +55,8 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_MAIN, DIALOG
     BEGIN
-        RIGHTMARGIN, 491
+        RIGHTMARGIN, 505
+        BOTTOMMARGIN, 107
     END
 
     IDD_LIST, DIALOG
@@ -81,6 +82,7 @@ IDI_PAUSE               ICON                    "icon\\pause.ico"
 IDI_PRE                 ICON                    "icon\\pre.ico"
 
 IDI_NEXT                ICON                    "icon\\next.ico"
+
 IDI_LOUD                ICON                    "icon\\highSound.ico"
 
 IDI_LOW                 ICON                    "icon\\lowSound.ico"
@@ -111,17 +113,17 @@ END
 // Dialog
 //
 
-IDD_MAIN DIALOGEX 0, 0, 493, 99
+IDD_MAIN DIALOGEX 0, 0, 507, 109
 STYLE DS_SETFONT | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "MusicPlayer"
-FONT 7, "Î¢ï¿½ï¿½ï¿½Åºï¿½", 400, 0, 0x0
+FONT 7, "Î¢ÈíÑÅºÚ", 400, 0, 0x0
 BEGIN
-    ICON            IDI_LOCAL,IDC_LOCAL,458,73,20,20,SS_NOTIFY
+    ICON            IDI_LOCAL,IDC_LOCAL,458,73,21,21,SS_NOTIFY
     PUSHBUTTON      "Button2",IDC_PLAY,14,73,20,18,BS_ICON
     CONTROL         "",IDC_Progress,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | TBS_NOTIFYBEFOREMOVE | WS_TABSTOP,10,44,423,15
     LTEXT           "00.00/00.00",IDC_PROSHOW,441,46,44,20
-    ICON            IDI_PRE,IDC_PRE,41,73,20,20,SS_NOTIFY
-    ICON            IDI_NEXT,IDC_NEXT,69,73,20,20,SS_NOTIFY
+    ICON            IDI_PRE,IDC_PRE,41,73,21,21,SS_NOTIFY
+    ICON            IDI_NEXT,IDC_NEXT,69,73,21,21,SS_NOTIFY
     CONTROL         "",IDC_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,317,73,100,15
     LTEXT           "0",IDC_VOLSHOW,423,76,18,10
     PUSHBUTTON      "Button1",IDC_VOLBUTTON,292,73,24,22,BS_ICON
@@ -133,12 +135,12 @@ CAPTION "MusicList"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LISTBOX         IDC_SONG_LIST,6,8,297,103,LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,WS_EX_TRANSPARENT | WS_EX_CLIENTEDGE
-    PUSHBUTTON      "ï¿½ï¿½ï¿½ï¿½",IDC_PLAY_FOCUSED,109,158,50,14
-    PUSHBUTTON      "ï¿½ï¿½ï¿½ï¿½",IDC_IMPORT,180,158,50,14
-    PUSHBUTTON      "É¾ï¿½ï¿½",IDC_DELETE,250,158,50,14
+    PUSHBUTTON      "²¥·Å",IDC_PLAY_FOCUSED,109,158,50,14
+    PUSHBUTTON      "µ¼Èë",IDC_IMPORT,180,158,50,14
+    PUSHBUTTON      "É¾³ý",IDC_DELETE,250,158,50,14
 END
 
-#endif    // ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½å£¬ï¿½Ð¹ï¿½) resources
+#endif    // ÖÐÎÄ(¼òÌå£¬ÖÐ¹ú) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
