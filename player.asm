@@ -53,6 +53,13 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 				mov playButtonState, _BEGIN
 				invoke musicPlayControl, dialogHandle, playButtonState, currentSongIndex
 			.endif
+		.elseif eax == IDC_VOLBUTTON
+			.if hasSound == 1
+				mov hasSound, 0
+			.else
+				mov hasSound, 1
+			.endif
+			invoke changeVolume, dialogHandle
 		.endif
 	.elseif eax == WM_TIMER	
 		.if playButtonState == _PLAY		
@@ -63,7 +70,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		invoke GetDlgCtrlID, lParam
 		mov currentSlider, eax
 		mov ax, WORD PTR wParam			
-		; mov progress bar
+		; move progress bar
 		.if currentSlider == IDC_PROGRESS
 			; end move bar
 			.if ax == SB_ENDSCROLL					
@@ -74,6 +81,14 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 				.endif
 			.elseif ax == SB_THUMBTRACK
 				mov isDraggingProgressBar, 1
+			.endif
+		; move volume bar
+		.elseif currentSlider == IDC_VOLUME
+			.if currentTotalSongNumber != 0
+				mov hasSound, 1
+				invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_GETPOS, 0, 0
+				mov currentVol, eax
+				invoke changeVolume, dialogHandle
 			.endif
 		.endif
 	.elseif	eax == WM_CLOSE
@@ -92,6 +107,21 @@ dialogInit proc dialogHandle : dword
 	invoke playButtonControl, dialogHandle, _PAUSE
 	mov playButtonState, _BEGIN
 	mov currentSongIndex, 0
+
+	mov hasSound, 1
+	; set volume slider
+	invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_SETRANGEMIN, 0, 0
+	invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_SETRANGEMAX, 0, volumeSize
+	mov edx, 0
+	mov eax, volumeSize
+	mov ebx, 2
+	div ebx
+	mov currentVol, eax
+	invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_SETPOS, 1, eax
+	;invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_SETPOS, 1, volumeSize
+	invoke changeVolume, dialogHandle
+
+	; set timer
 	invoke SetTimer, dialogHandle, 1, 500, NULL
 	ret
 dialogInit endp
@@ -134,6 +164,7 @@ musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword
 	ret
 musicPlayControl endp
 
+
 ;######################################################
 ;the play button icon control function
 ;param:
@@ -154,6 +185,7 @@ playButtonControl proc dialogHandle : dword, state : byte
 	
 	ret
 playButtonControl endp
+
 
 ;######################################################
 ;the list dialog callback function
@@ -186,7 +218,7 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			;#############
 		.elseif ax == IDC_SONG_LIST
 			shr eax,16
-			.if ax == LBN_SELCHANGE	;选中项发生改变
+			.if ax == LBN_SELCHANGE	;选锟斤拷锟筋发锟斤拷锟侥憋拷
 				invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
 				mov currentSongIndex, eax
 				invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
@@ -280,6 +312,79 @@ changeTime proc dialogHandle: dword
 	.endif
 	ret
 changeTime endp
+
+
+;######################################################
+;the volume control function, change the volume by slider
+;param:
+;	dialogHandle: the handle of the music list dialog
+;######################################################
+changeVolume proc dialogHandle: dword
+	; get the pos of the vol slider
+	;.if currentVol == 0
+	;	mov hasSound, 0
+	;.else
+	;	mov hasSound, 1
+	;.endif
+
+	.if hasSound == 1
+		invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_SETPOS, 1, currentVol
+		invoke wsprintf, addr mediaCommand, addr adjustVolumeCommand, currentVol
+		.if currentVol == 0
+			invoke changeVolumeIcon, dialogHandle, _MUTE
+		.elseif currentVol <= 33
+			invoke changeVolumeIcon, dialogHandle, _LOW
+		.elseif currentVol > 66
+			invoke changeVolumeIcon, dialogHandle, _LOUD
+		.else
+			invoke changeVolumeIcon, dialogHandle, _MID
+		.endif
+	.else
+		invoke wsprintf, addr mediaCommand, addr adjustVolumeCommand, 0
+		invoke changeVolumeIcon, dialogHandle, _MUTE
+	.endif
+	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
+	invoke displayVolume, dialogHandle
+	
+	ret
+changeVolume endp
+
+
+;######################################################
+;the volume display function, show the volume by text
+;param:
+;	dialogHandle: the handle of the music list dialog
+;######################################################
+displayVolume proc dialogHandle: dword
+	invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_GETPOS, 0, 0
+	invoke wsprintf, addr mediaCommand, addr int2str, eax
+	invoke SendDlgItemMessage, dialogHandle, IDC_VOLSHOW, WM_SETTEXT, 0, addr mediaCommand
+	ret
+displayVolume endp
+
+
+;######################################################
+;the volume icon function, change the vol icon by volume
+;param:
+;	dialogHandle: the handle of the music list dialog
+;	state: the status of volume
+;######################################################
+changeVolumeIcon proc dialogHandle: dword, state: byte
+	.if state == _MUTE
+		mov eax, IDI_MUTE
+	.elseif state == _LOW
+		mov eax, IDI_LOW
+	.elseif state == _MID
+		mov eax, IDI_MID
+	.else
+		mov eax, IDI_LOUD
+	.endif
+
+	invoke LoadImage, hInstance, eax, IMAGE_ICON, ICON_WIDTH, ICON_HEIGHT, LR_DEFAULTCOLOR
+	invoke SendDlgItemMessage, dialogHandle, IDC_VOLBUTTON, BM_SETIMAGE, IMAGE_ICON, eax
+
+	ret
+changeVolumeIcon endp
 
 ;######################################################
 ;the play control function, open the music of the index given
