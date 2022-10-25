@@ -78,6 +78,14 @@ IDI_LOCAL               ICON                    "icon\\view-column.ico"
 
 IDI_PAUSE               ICON                    "icon\\pause.ico"
 
+IDI_LOUD                ICON                    "icon\\highSound.ico"
+
+IDI_LOW                 ICON                    "icon\\lowSound.ico"
+
+IDI_MID                 ICON                    "icon\\midSound.ico"
+
+IDI_MUTE                ICON                    "icon\\closeSound.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -99,9 +107,6 @@ END
 //
 // Dialog
 //
-#ifndef TBS_NOTIFYBEFOREMOVE
-#define TBS_NOTIFYBEFOREMOVE 0x0800
-#endif
 
 IDD_MAIN DIALOGEX 0, 0, 491, 107
 STYLE DS_SETFONT | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
@@ -112,6 +117,9 @@ BEGIN
     PUSHBUTTON      "Button2",IDC_PLAY,6,73,20,18,BS_ICON
     CONTROL         "",IDC_Progress,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | TBS_NOTIFYBEFOREMOVE | WS_TABSTOP,10,44,423,15
     LTEXT           "00.00/00.00",IDC_PROSHOW,441,46,44,20
+    CONTROL         "",IDC_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,317,73,100,15
+    LTEXT           "0",IDC_VOLSHOW,423,76,18,10
+    PUSHBUTTON      "Button1",IDC_VOLBUTTON,292,73,24,22,BS_ICON
 END
 
 IDD_LIST DIALOGEX 0, 0, 310, 177

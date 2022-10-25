@@ -32,6 +32,10 @@ listDialogInit proto dialogHandle:dword
 changeSong proto dialogHandle: dword, newSongIndex: dword
 closeSong proto dialogHandle: dword
 checkPlay proto dialogHandle: dword
+changeVolume proto dialogHandle: dword
+displayVolume proto dialogHandle: dword
+changeVolumeIcon proto dialogHandle: dword, state: byte
+
 
 ;the struct of the song
 songStructure STRUCT
@@ -53,14 +57,27 @@ IDC_PLAY_FOCUSED EQU 1009
 IDC_IMPORT EQU 1010
 IDC_DELETE EQU 1011
 IDC_LIST1 EQU 1007
+IDC_VOLBUTTON EQU 1013
+IDC_VOLUME EQU 1020
+IDC_VOLSHOW EQU 1021
 
 IDI_PLAY EQU 119
 IDI_PAUSE EQU 122
+IDI_MUTE EQU 131
+IDI_LOW EQU 127 
+IDI_MID EQU 130
+IDI_LOUD EQU 126
 
-; state for the button
+; state of the play button
 _PAUSE EQU 0
 _PLAY EQU 1
 _BEGIN EQU 2
+
+; type of volume icon
+_MUTE EQU 0
+_LOW EQU 1
+_MID EQU 2
+_LOUD EQU 3
 
 ; const parm of the icon
 ICON_HEIGHT EQU 32
@@ -93,6 +110,7 @@ resumeSongCommand byte "resume currentSong",0
 getLengthCommand byte "status currentSong length", 0		
 openSongCommand byte 'open "%s" alias currentSong type mpegvideo',0
 closeSongCommand byte "close currentSong",0  
+adjustVolumeCommand byte "setaudio currentSong volume to %d",0
 
 ; value
 isDraggingProgressBar dword 0		
@@ -105,7 +123,11 @@ timeMinuteLength dword 0
 timeSecondLength dword 0			
 timeShow byte "%02d:%02d/%02d:%02d", 0		
 songPosition byte 32 dup(0)			
-songLength byte 32 dup(0)			
+songLength byte 32 dup(0)	
+int2str byte '%d',0
+volumeSize dword 100
+hasSound byte 1
+currentVol dword ?
 
 ;handle
 mainHandle dword 0
