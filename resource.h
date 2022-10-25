@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ ï¿½ï¿½ï¿½ÉµÄ°ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
-// ï¿½ï¿½ Resource.rc Ê¹ï¿½ï¿½
+// Microsoft Visual C++ Éú³ÉµÄ°üº¬ÎÄ¼þ¡£
+// ¹© Resource.rc Ê¹ÓÃ
 //
 #define IDD_MAIN                        101
 #define IDI_PLAY                        119
@@ -23,6 +23,7 @@
 #define IDC_DELETE                      1011
 #define IDC_NEXT                        1011
 #define IDC_VOLBUTTON                   1013
+#define IDC_NAMESHOW                    1014
 #define IDC_VOLUME                      1020
 #define IDC_VOLSHOW                     1021
 #define IDC_PROSHOW                     1111
@@ -34,7 +35,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1014
+#define _APS_NEXT_CONTROL_VALUE         1015
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

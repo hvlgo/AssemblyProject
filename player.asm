@@ -153,6 +153,8 @@ musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword
 		div timeScaleSec
 		mov timeMinuteLength, eax
 		mov timeSecondLength, edx
+
+		invoke displaySongName, dialogHandle, curSongIndex
 	.elseif state == _PAUSE
 		invoke playButtonControl, dialogHandle, _PLAY
 		invoke mciSendString, addr resumeSongCommand, NULL, 0, NULL
@@ -320,13 +322,6 @@ changeTime endp
 ;	dialogHandle: the handle of the music list dialog
 ;######################################################
 changeVolume proc dialogHandle: dword
-	; get the pos of the vol slider
-	;.if currentVol == 0
-	;	mov hasSound, 0
-	;.else
-	;	mov hasSound, 1
-	;.endif
-
 	.if hasSound == 1
 		invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_SETPOS, 1, currentVol
 		invoke wsprintf, addr mediaCommand, addr adjustVolumeCommand, currentVol
@@ -412,39 +407,8 @@ playSong endp
 ;######################################################
 closeSong proc uses eax dialogHandle: dword
 	invoke mciSendString, ADDR closeSongCommand, NULL, 0, NULL
-	
 	ret
 closeSong endp
-
-;######################################################
-;the play control function, change music when the current music is over
-;param:
-;	dialogHandle: the handle of the music list dialog
-;	newSongIndex: the index of the next music of list
-;######################################################
-changeSong proc dialogHandle: dword, newSongIndex: dword
-	invoke closeSong, dialogHandle	; close the song before
-
-	mov eax, newSongIndex
-	mov currentSongIndex, eax	
-	invoke playSong, dialogHandle, currentSongIndex	
-	invoke mciSendString, ADDR playSongCommand, NULL, 0, NULL
-	
-	; set song length
-	invoke mciSendString, addr getLengthCommand, addr songLength, 32, NULL
-	invoke StrToInt, addr songLength
-	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_SETRANGEMAX, 0, eax
-	
-	invoke StrToInt, addr songLength
-	mov edx, 0
-	div timeScale
-	
-	mov edx, 0
-	div timeScaleSec
-	mov timeMinuteLength, eax
-	mov timeSecondLength, edx
-	ret
-changeSong endp
 
 ;######################################################
 ;check the music over or not, call after the timer event
@@ -464,7 +428,8 @@ checkPlay proc dialogHandle: dword
 		; TODO need new index
 			invoke nextIndex, currentSongIndex
 			mov currentSongIndex, eax
-			invoke changeSong, dialogHandle, currentSongIndex
+			mov playButtonState, _BEGIN
+			invoke musicPlayControl, dialogHandle, playButtonState, currentSongIndex
 		.endif
 	.endif
 	Ret
@@ -512,6 +477,13 @@ importSongToList proc dialogHandle: dword
 	ret
 importSongToList endp
 
+; ######################################################
+; increase the index
+; param:
+;	index: the index to increase
+; return:
+;	newIndex: increased index
+; ######################################################
 nextIndex proc curIndex : dword
 	inc curIndex
 	mov ebx, curIndex
@@ -522,6 +494,13 @@ nextIndex proc curIndex : dword
 	ret
 nextIndex endp
 
+; ######################################################
+; decrease the index
+; param:
+;	index: the index to decrease
+; return:
+;	newIndex: decreased index
+; ######################################################
 preIndex proc curIndex : dword
 	mov ebx, curIndex
 	.if ebx == 0
@@ -533,5 +512,15 @@ preIndex proc curIndex : dword
 	mov eax, curIndex
 	ret
 preIndex endp
+
+displaySongName proc dialogHandle : dword, curIndex : dword
+	mov edi, OFFSET songList
+	mov ebx, SIZEOF songStructure
+	imul ebx, curIndex
+	add edi, ebx
+	invoke wsprintf, addr mediaCommand, addr(songStructure PTR[edi]).songName
+	invoke SendDlgItemMessage, dialogHandle, IDC_NAMESHOW, WM_SETTEXT, 0, addr mediaCommand
+	ret
+displaySongName endp
 
 end start

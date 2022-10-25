@@ -37,7 +37,7 @@ preIndex proto curIndex : dword
 changeVolume proto dialogHandle: dword
 displayVolume proto dialogHandle: dword
 changeVolumeIcon proto dialogHandle: dword, state: byte
-
+displaySongName proto dialogHandle : dword, curIndex : dword
 
 ;the struct of the song
 songStructure STRUCT
@@ -64,6 +64,7 @@ IDC_NEXT EQU 1011
 IDC_VOLBUTTON EQU 1013
 IDC_VOLUME EQU 1020
 IDC_VOLSHOW EQU 1021
+IDC_NAMESHOW EQU 1014
 
 IDI_PLAY EQU 119
 IDI_PAUSE EQU 122
@@ -129,6 +130,7 @@ timeShow byte "%02d:%02d/%02d:%02d", 0
 songPosition byte 32 dup(0)			
 songLength byte 32 dup(0)	
 int2str byte '%d',0
+songName byte '%s', 0
 volumeSize dword 100
 hasSound byte 1
 currentVol dword ?
