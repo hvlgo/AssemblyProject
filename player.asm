@@ -107,7 +107,7 @@ dialogInit proc dialogHandle : dword
 	invoke playButtonControl, dialogHandle, _PAUSE
 	mov playButtonState, _BEGIN
 	mov currentSongIndex, 0
-	mov playMode, _LIST
+	mov playMode, _RANDOM
 
 	mov hasSound, 1
 	; set volume slider
@@ -155,6 +155,7 @@ musicPlayControl proc dialogHandle : dword, state : byte, curSongIndex: dword
 		mov timeMinuteLength, eax
 		mov timeSecondLength, edx
 
+		invoke changeVolume, dialogHandle
 		invoke displaySongName, dialogHandle, curSongIndex
 	.elseif state == _PAUSE
 		invoke playButtonControl, dialogHandle, _PLAY
@@ -506,11 +507,19 @@ nextIndexByMode proc curIndex : dword
 		mov eax, curIndex
 		ret
 	.elseif playMode == _RANDOM
-		mov eax, currentTotalSongNumber
-		mov dx, 41H
-		out dx, ax
-		in ax, dx
-		movsx eax, ax
+		.if currentTotalSongNumber == 1
+			mov eax, 0
+			ret
+		.endif
+		invoke crt_rand
+		mov edx, 0
+		mov ebx, currentTotalSongNumber
+		dec ebx
+		div ebx
+		.if edx >= curIndex
+			inc edx
+		.endif
+		mov eax, edx
 		ret
 	.endif
 

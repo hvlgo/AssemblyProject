@@ -6,6 +6,7 @@ include gdi32.inc
 include winmm.inc
 include shlwapi.inc
 include Comdlg32.inc
+include msvcrt.inc
 
 
 includelib	Comdlg32.lib
