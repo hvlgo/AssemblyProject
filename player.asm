@@ -60,6 +60,10 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 				mov hasSound, 1
 			.endif
 			invoke changeVolume, dialogHandle
+		.elseif eax == IDC_PLAYMODE
+			invoke nextMode, playMode
+			mov playMode, al
+			invoke playModeControl, dialogHandle, playMode
 		.endif
 	.elseif eax == WM_TIMER	
 		.if playButtonState == _PLAY		
@@ -107,7 +111,8 @@ dialogInit proc dialogHandle : dword
 	invoke playButtonControl, dialogHandle, _PAUSE
 	mov playButtonState, _BEGIN
 	mov currentSongIndex, 0
-	mov playMode, _RANDOM
+	mov playMode, _LIST
+	invoke playModeControl, dialogHandle, playMode
 
 	mov hasSound, 1
 	; set volume slider
@@ -569,5 +574,47 @@ displaySongName proc dialogHandle : dword, curIndex : dword
 	invoke SendDlgItemMessage, dialogHandle, IDC_NAMESHOW, WM_SETTEXT, 0, addr mediaCommand
 	ret
 displaySongName endp
+
+; ######################################################
+; the play mode and its icon control function
+; param:
+;	dialogHandle: the handle of the main dialog
+;	mode: the play mode you wish after the function
+; ######################################################
+playModeControl proc dialogHandle : dword, mode : byte
+	.if mode == _LIST
+		mov eax, IDI_LIST
+		mov playMode, _LIST
+	.elseif mode == _SINGLE
+		mov eax, IDI_SINGLE
+		mov playMode, _SINGLE
+	.else
+		mov eax, IDI_RANDOM
+		mov playMode, _RANDOM
+	.endif
+
+	invoke LoadImage, hInstance, eax, IMAGE_ICON, ICON_WIDTH, ICON_HEIGHT, LR_DEFAULTCOLOR
+	invoke SendDlgItemMessage, dialogHandle, IDC_PLAYMODE, BM_SETIMAGE, IMAGE_ICON, eax
+	ret
+playModeControl endp
+
+; ######################################################
+; increase the mode
+; param:
+;	mode: current mode
+; return:
+;	newMode: increased mode
+; ######################################################
+nextMode proc mode : byte
+	.if mode == _LIST
+		mov eax, _SINGLE
+	.elseif mode == _SINGLE
+		mov eax, _RANDOM
+	.elseif mode == _RANDOM
+		mov eax, _LIST
+	.endif
+
+	ret
+nextMode endp
 
 end start

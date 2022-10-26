@@ -40,6 +40,10 @@ changeVolume proto dialogHandle: dword
 displayVolume proto dialogHandle: dword
 changeVolumeIcon proto dialogHandle: dword, state: byte
 displaySongName proto dialogHandle : dword, curIndex : dword
+playModeControl proto dialogHandle : dword, mode : byte
+nextMode proto mode : byte
+
+
 
 ;the struct of the song
 songStructure STRUCT
