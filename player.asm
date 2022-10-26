@@ -35,7 +35,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		mov	eax, wParam
 		.if	eax == IDC_PLAY
 			.if currentTotalSongNumber != 0
-				invoke musicPlayControl, dialogHandle, playButtonState, 0
+				invoke musicPlayControl, dialogHandle, playButtonState, currentSongIndex
 			.endif
 		.elseif eax == IDC_LOCAL
 			invoke DialogBoxParam, hInstance, IDD_LIST, 0, offset listProc, 0
@@ -80,7 +80,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 					invoke changeTime, dialogHandle	
 				.endif
 			.elseif ax == SB_THUMBTRACK
-				mov isDraggingProgressBar, 1
+				mov isDraggingProgressBar, 1 ; TODO: the time show need to change
 			.endif
 		; move volume bar
 		.elseif currentSlider == IDC_VOLUME
@@ -107,6 +107,7 @@ dialogInit proc dialogHandle : dword
 	invoke playButtonControl, dialogHandle, _PAUSE
 	mov playButtonState, _BEGIN
 	mov currentSongIndex, 0
+	mov playMode, _LIST
 
 	mov hasSound, 1
 	; set volume slider
@@ -425,7 +426,7 @@ checkPlay proc dialogHandle: dword
 		.if eax >= temp		; the song is over
 		; TODO add different play mode
 		; TODO need new index
-			invoke nextIndex, currentSongIndex
+			invoke nextIndexByMode, currentSongIndex
 			mov currentSongIndex, eax
 			mov playButtonState, _BEGIN
 			invoke musicPlayControl, dialogHandle, playButtonState, currentSongIndex
@@ -492,6 +493,36 @@ nextIndex proc curIndex : dword
 	mov eax, curIndex
 	ret
 nextIndex endp
+
+; ######################################################
+; increase the index considering the playMode
+; param:
+;	curIndex: the index to increase considering the playMode
+; return:
+;	newIndex: increased index considering the playMode
+; ######################################################
+nextIndexByMode proc curIndex : dword
+	.if playMode == _SINGLE
+		mov eax, curIndex
+		ret
+	.elseif playMode == _RANDOM
+		mov eax, currentTotalSongNumber
+		mov dx, 41H
+		out dx, ax
+		in ax, dx
+		movsx eax, ax
+		ret
+	.endif
+
+	; now playMode == _LIST
+	inc curIndex
+	mov ebx, curIndex
+	.if ebx >= currentTotalSongNumber
+		mov curIndex, 0
+	.endif
+	mov eax, curIndex
+	ret
+nextIndexByMode endp
 
 ; ######################################################
 ; decrease the index

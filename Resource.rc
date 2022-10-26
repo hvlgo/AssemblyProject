@@ -89,6 +89,12 @@ IDI_MID                 ICON                    "icon\\midSound.ico"
 
 IDI_MUTE                ICON                    "icon\\closeSound.ico"
 
+IDI_LIST                ICON                    "icon\\list.ico"
+
+IDI_RANDOM              ICON                    "icon\\random.ico"
+
+IDI_SINGLE              ICON                    "icon\\single.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -116,16 +122,17 @@ STYLE DS_SETFONT | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
 CAPTION "MusicPlayer"
 FONT 14, "Î¢ÈíÑÅºÚ Light", 290, 0, 0x86
 BEGIN
-    ICON            IDI_LOCAL,IDC_LOCAL,292,61,10,9,SS_NOTIFY
+    ICON            IDI_LOCAL,IDC_LOCAL,292,61,20,20,SS_NOTIFY
     PUSHBUTTON      "Button2",IDC_PLAY,10,59,14,14,BS_ICON
     CONTROL         "",IDC_Progress,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | TBS_NOTIFYBEFOREMOVE | WS_TABSTOP,7,37,268,16
     LTEXT           "00.00/00.00",IDC_PROSHOW,284,36,44,12
-    ICON            IDI_PRE,IDC_PRE,38,61,10,9,SS_NOTIFY
-    ICON            IDI_NEXT,IDC_NEXT,63,61,10,9,SS_NOTIFY
+    ICON            IDI_PRE,IDC_PRE,38,61,20,20,SS_NOTIFY
+    ICON            IDI_NEXT,IDC_NEXT,63,61,20,20,SS_NOTIFY
     CONTROL         "",IDC_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,148,62,100,15
     LTEXT           "0",IDC_VOLSHOW,255,61,18,10
-    PUSHBUTTON      "Button1",IDC_VOLBUTTON,127,58,15,15,BS_ICON
+    PUSHBUTTON      "Button1",IDC_VOLBUTTON,127,59,14,14,BS_ICON
     LTEXT           "",IDC_NAMESHOW,10,16,175,13
+    PUSHBUTTON      "Button1",IDC_PLAYMODE,89,59,14,14,BS_ICON
 END
 
 IDD_LIST DIALOGEX 0, 0, 310, 177

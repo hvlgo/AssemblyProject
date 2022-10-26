@@ -33,6 +33,7 @@ changeSong proto dialogHandle: dword, newSongIndex: dword
 closeSong proto dialogHandle: dword
 checkPlay proto dialogHandle: dword
 nextIndex proto curIndex : dword
+nextIndexByMode proto curIndex : dword
 preIndex proto curIndex : dword
 changeVolume proto dialogHandle: dword
 displayVolume proto dialogHandle: dword
@@ -65,6 +66,7 @@ IDC_VOLBUTTON EQU 1013
 IDC_VOLUME EQU 1020
 IDC_VOLSHOW EQU 1021
 IDC_NAMESHOW EQU 1014
+IDC_PLAYMODE EQU 1015
 
 IDI_PLAY EQU 119
 IDI_PAUSE EQU 122
@@ -72,6 +74,9 @@ IDI_MUTE EQU 131
 IDI_LOW EQU 127 
 IDI_MID EQU 130
 IDI_LOUD EQU 126
+IDI_LIST EQU 132
+IDI_RANDOM EQU 133
+IDI_SINGLE EQU 134
 
 ; state of the play button
 _PAUSE EQU 0
@@ -84,6 +89,11 @@ _LOW EQU 1
 _MID EQU 2
 _LOUD EQU 3
 
+; state of play mode
+_LIST EQU 0
+_SINGLE EQU 1
+_RANDOM EQU 2
+
 ; const parm of the icon
 ICON_HEIGHT EQU 32
 ICON_WIDTH EQU 32
@@ -92,12 +102,18 @@ ICON_WIDTH EQU 32
 ; states of the button
 playButtonState byte 0
 
+; state of the play mode
+playMode byte 0
+
 ;song list
 songList songStructure 100 dup(<"0", "0">)
+
 ;total number of current songs 
 currentTotalSongNumber dword 0
+
 ;current song index
 currentSongIndex dword 0
+
 ;temporarily store the filename
 tempName BYTE 1000 dup(0)
 
@@ -130,7 +146,6 @@ timeShow byte "%02d:%02d/%02d:%02d", 0
 songPosition byte 32 dup(0)			
 songLength byte 32 dup(0)	
 int2str byte '%d',0
-songName byte '%s', 0
 volumeSize dword 100
 hasSound byte 1
 currentVol dword ?
