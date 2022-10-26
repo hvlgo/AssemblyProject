@@ -25,7 +25,7 @@ dialogInit proto dialogHandle : dword
 musicPlayControl proto dialogHandle : dword, state : byte, curSongIndex: dword
 playButtonControl proto dialogHandle : dword, state : byte
 changeProgressBar proto dialogHandle: dword
-displayTime proto dialogHandle: dword, currentPosition: dword
+displayTime proto dialogHandle: dword
 changeTime proto dialogHandle: dword
 importSongToList proto dialogHandle: dword
 playSong proto dialogHandle: dword, index: dword

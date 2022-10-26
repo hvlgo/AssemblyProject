@@ -85,6 +85,9 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 				.endif
 			.elseif ax == SB_THUMBTRACK
 				mov isDraggingProgressBar, 1 ; TODO: the time show need to change
+				.if currentTotalSongNumber != 0				
+					invoke displayTime, dialogHandle
+				.endif
 			.endif
 		; move volume bar
 		.elseif currentSlider == IDC_VOLUME
@@ -278,7 +281,7 @@ changeProgressBar proc dialogHandle: dword
 		.if isDraggingProgressBar == 0	
 			invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_SETPOS, 1, temp
 		.endif
-		invoke displayTime, dialogHandle, temp
+		invoke displayTime, dialogHandle
 	.endif
 	ret
 changeProgressBar endp
@@ -289,8 +292,8 @@ changeProgressBar endp
 ;	dialogHandle: the handle of the main dialog
 ;	currentPosition: the time of the music now
 ;######################################################
-displayTime proc dialogHandle: dword, currentPosition: dword
-	mov eax, currentPosition
+displayTime proc dialogHandle: dword
+	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_GETPOS, 0, 0
 	mov edx, 0
 	div timeScale
 	
