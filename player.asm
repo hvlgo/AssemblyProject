@@ -259,7 +259,7 @@ listDialogInit endp
 ;######################################################
 ;the Progress Bar control function, change the progess bar after the timer event
 ;param:
-;	dialogHandle: the handle of the music list dialog
+;	dialogHandle: the handle of the main dialog
 ;######################################################
 changeProgressBar proc dialogHandle: dword
 	local temp: dword
@@ -279,7 +279,7 @@ changeProgressBar endp
 ;######################################################
 ;the time display control function, change the time text according to time
 ;param:
-;	dialogHandle: the handle of the music list dialog
+;	dialogHandle: the handle of the main dialog
 ;	currentPosition: the time of the music now
 ;######################################################
 displayTime proc dialogHandle: dword, currentPosition: dword
@@ -299,7 +299,7 @@ displayTime endp
 ;######################################################
 ;the time control function, change the time after the bar scolled
 ;param:
-;	dialogHandle: the handle of the music list dialog
+;	dialogHandle: the handle of the main dialog
 ;######################################################
 changeTime proc dialogHandle: dword
 	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_GETPOS, 0, 0		
@@ -319,7 +319,7 @@ changeTime endp
 ;######################################################
 ;the volume control function, change the volume by slider
 ;param:
-;	dialogHandle: the handle of the music list dialog
+;	dialogHandle: the handle of the main dialog
 ;######################################################
 changeVolume proc dialogHandle: dword
 	.if hasSound == 1
@@ -348,7 +348,7 @@ changeVolume endp
 ;######################################################
 ;the volume display function, show the volume by text
 ;param:
-;	dialogHandle: the handle of the music list dialog
+;	dialogHandle: the handle of the main dialog
 ;######################################################
 displayVolume proc dialogHandle: dword
 	invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_GETPOS, 0, 0
@@ -361,7 +361,7 @@ displayVolume endp
 ;######################################################
 ;the volume icon function, change the vol icon by volume
 ;param:
-;	dialogHandle: the handle of the music list dialog
+;	dialogHandle: the handle of the main dialog
 ;	state: the status of volume
 ;######################################################
 changeVolumeIcon proc dialogHandle: dword, state: byte
@@ -384,7 +384,7 @@ changeVolumeIcon endp
 ;######################################################
 ;the play control function, open the music of the index given
 ;param:
-;	dialogHandle: the handle of the music list dialog
+;	dialogHandle: the handle of the main dialog
 ;	index: the index of the music of list
 ;######################################################
 playSong proc dialogHandle: dword, index: dword
@@ -403,7 +403,7 @@ playSong endp
 ;######################################################
 ;the play control function, close the current music
 ;param:
-;	dialogHandle: the handle of the music list dialog
+;	dialogHandle: the handle of the main dialog
 ;######################################################
 closeSong proc uses eax dialogHandle: dword
 	invoke mciSendString, ADDR closeSongCommand, NULL, 0, NULL
@@ -413,8 +413,7 @@ closeSong endp
 ;######################################################
 ;check the music over or not, call after the timer event
 ;param:
-;	dialogHandle: the handle of the music list dialog
-;	newSongIndex: the index of the next music of list
+;	dialogHandle: the handle of the main dialog
 ;######################################################
 checkPlay proc dialogHandle: dword
 	local temp: dword
@@ -480,7 +479,7 @@ importSongToList endp
 ; ######################################################
 ; increase the index
 ; param:
-;	index: the index to increase
+;	curIndex: the index to increase
 ; return:
 ;	newIndex: increased index
 ; ######################################################
@@ -497,7 +496,7 @@ nextIndex endp
 ; ######################################################
 ; decrease the index
 ; param:
-;	index: the index to decrease
+;	curIndex: the index to decrease
 ; return:
 ;	newIndex: decreased index
 ; ######################################################
@@ -513,6 +512,14 @@ preIndex proc curIndex : dword
 	ret
 preIndex endp
 
+; ######################################################
+; display the name of the song in the text control
+; param:
+;	dialogHandle: the handle of the main dialog
+;	curIndex: the index to decrease
+; return:
+;	newIndex: decreased index
+; ######################################################
 displaySongName proc dialogHandle : dword, curIndex : dword
 	mov edi, OFFSET songList
 	mov ebx, SIZEOF songStructure
