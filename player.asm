@@ -225,17 +225,21 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			;TODO
 			;#############
 		.elseif eax == IDC_PLAY_FOCUSED
-			invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
-			invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
-			invoke	EndDialog, dialogHandle, 0
+			.if currentTotalSongNumber != 0 && hasFocuseSong == 1
+				invoke musicPlayControl, mainHandle, _BEGIN, currentSongIndex   ;change the song
+				invoke	EndDialog, dialogHandle, 0
+				mov hasFocuseSong,0
+			.endif
 		.elseif ax == IDC_SONG_LIST
 			shr eax,16
 			.if ax == LBN_SELCHANGE	
 				invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
+				mov hasFocuseSong,1
 				mov currentSongIndex, eax
 				.if eax == tempSongIndex
 					invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
 					invoke	EndDialog, dialogHandle, 0
+					mov hasFocuseSong,0
 				.else
 					mov tempSongIndex,eax
 				.endif
@@ -245,6 +249,7 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		mov tempSongIndex,500
 	.elseif	eax == WM_CLOSE
 		invoke	EndDialog, dialogHandle, 0
+		mov hasFocuseSong,0
 	.endif
 	xor eax, eax
 	ret

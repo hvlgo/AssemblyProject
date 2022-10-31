@@ -122,6 +122,9 @@ currentSongIndex dword 0
 ;temporarily store the focused song index used to double click to play
 tempSongIndex dword 500
 
+;judge there is a song focused or not
+hasFocuseSong dword 0
+
 ;temporarily store the filename
 tempName BYTE 1000 dup(0)
 
