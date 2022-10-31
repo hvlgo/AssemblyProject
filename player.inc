@@ -119,6 +119,9 @@ currentTotalSongNumber dword 0
 ;current song index
 currentSongIndex dword 0
 
+;temporarily store the focused song index used to double click to play
+tempSongIndex dword 500
+
 ;temporarily store the filename
 tempName BYTE 1000 dup(0)
 

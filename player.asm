@@ -225,18 +225,24 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			;TODO
 			;#############
 		.elseif eax == IDC_PLAY_FOCUSED
-			;#############
-			;TODO
-			;#############
+			invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
+			invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
+			invoke	EndDialog, dialogHandle, 0
 		.elseif ax == IDC_SONG_LIST
 			shr eax,16
 			.if ax == LBN_SELCHANGE	
 				invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
 				mov currentSongIndex, eax
-				invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
-				invoke	EndDialog, dialogHandle, 0
+				.if eax == tempSongIndex
+					invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
+					invoke	EndDialog, dialogHandle, 0
+				.else
+					mov tempSongIndex,eax
+				.endif
 			.endif
 		.endif
+	.elseif eax == WM_TIMER	
+		mov tempSongIndex,500
 	.elseif	eax == WM_CLOSE
 		invoke	EndDialog, dialogHandle, 0
 	.endif
@@ -250,6 +256,9 @@ listProc endp
 ;	dialogHandle: the handle of the music list dialog
 ;######################################################
 listDialogInit proc dialogHandle: dword
+	; set timer
+	invoke SetTimer, dialogHandle, 1, 800, NULL
+
 	mov ebx,0
 	mov ecx,currentTotalSongNumber
 	.WHILE ecx != 0
