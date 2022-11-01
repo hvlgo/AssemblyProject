@@ -117,6 +117,14 @@ dialogInit proc dialogHandle : dword
 	mov playMode, _LIST
 	invoke playModeControl, dialogHandle, playMode
 
+	invoke wsprintf, addr mediaCommand, addr blankSongName
+	invoke SendDlgItemMessage, dialogHandle, IDC_NAMESHOW, WM_SETTEXT, 0, addr mediaCommand
+
+	invoke wsprintf, addr mediaCommand, addr timeShow, 0, 0, 0, 0
+	invoke SendDlgItemMessage, dialogHandle, IDC_PROSHOW, WM_SETTEXT, 0, addr mediaCommand
+
+	invoke SendDlgItemMessage, dialogHandle, IDC_PROGRESS, TBM_SETPOS, 1, 0
+
 	mov hasSound, 1
 	; set volume slider
 	invoke SendDlgItemMessage, dialogHandle, IDC_VOLUME, TBM_SETRANGEMIN, 0, 0
@@ -198,6 +206,56 @@ playButtonControl proc dialogHandle : dword, state : byte
 	ret
 playButtonControl endp
 
+deleteSingleSong proc dialogHandle:dword,deleteSongIndex:dword
+	invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_DELETESTRING, deleteSongIndex, 0
+
+	mov ebx, deleteSongIndex
+	mov edi, OFFSET songList
+	mov edx, SIZEOF songStructure
+	imul edx, ebx
+	add edi, edx					;get index of the song to be deleted
+
+	dec currentTotalSongNumber
+
+	mov ecx, deleteSongIndex
+	.while ecx < currentTotalSongNumber
+		pushad
+		invoke lstrcpy,ADDR (songStructure PTR [edi]).songName,ADDR blankSongName
+		invoke lstrcpy,ADDR (songStructure PTR [edi]).songPath,ADDR blankSongName
+		mov esi,edi
+		add esi,SIZEOF songStructure
+		invoke lstrcpy,ADDR (songStructure PTR [edi]).songName,ADDR (songStructure PTR [esi]).songName
+		invoke lstrcpy,ADDR (songStructure PTR [edi]).songPath,ADDR (songStructure PTR [esi]).songPath
+		popad
+		inc ecx
+		add edi,SIZEOF songStructure
+	.endw
+
+	ret
+deleteSingleSong endp
+
+deleteSong proc dialogHandle:dword,deleteSongIndex:dword
+	mov eax,deleteSongIndex
+	.if eax != currentSongIndex
+		invoke deleteSingleSong,dialogHandle,deleteSongIndex
+		.if eax < currentSongIndex
+			dec currentSongIndex
+		.endif
+	.else
+		invoke closeSong,mainHandle
+		invoke deleteSingleSong,dialogHandle,deleteSongIndex
+		.if currentTotalSongNumber == 0
+			invoke dialogInit,mainHandle
+		.else
+			mov eax,deleteSongIndex
+			.if eax == currentTotalSongNumber
+				mov currentSongIndex,0
+			.endif
+			invoke musicPlayControl, mainHandle, _BEGIN, currentSongIndex   ;change the song
+		.endif		
+	.endif
+	ret
+deleteSong endp
 
 ;######################################################
 ;the list dialog callback function
@@ -222,26 +280,31 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			mov eax, wParam
 		.elseif eax == IDC_DELETE
 			.if currentTotalSongNumber != 0 && hasFocuseSong == 1
-				;#############
-				;TODO
-				;#############
+				invoke deleteSong,dialogHandle,focusedSongIndex
+				mov hasFocuseSong,0
+				mov focusedSongIndex,500
 			.endif
 		.elseif eax == IDC_PLAY_FOCUSED
 			.if currentTotalSongNumber != 0 && hasFocuseSong == 1
+				mov eax,focusedSongIndex
+				mov currentSongIndex,eax
 				invoke musicPlayControl, mainHandle, _BEGIN, currentSongIndex   ;change the song
 				invoke	EndDialog, dialogHandle, 0
 				mov hasFocuseSong,0
+				mov focusedSongIndex,500
 			.endif
 		.elseif ax == IDC_SONG_LIST
 			shr eax,16
 			.if ax == LBN_SELCHANGE	
 				invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_GETCURSEL, 0, 0	;get the index
 				mov hasFocuseSong,1
-				mov currentSongIndex, eax
+				mov focusedSongIndex,eax
 				.if eax == tempSongIndex
+					mov currentSongIndex, eax
 					invoke musicPlayControl, mainHandle, _BEGIN, eax   ;change the song
 					invoke	EndDialog, dialogHandle, 0
 					mov hasFocuseSong,0
+					mov focusedSongIndex,500
 				.else
 					mov tempSongIndex,eax
 				.endif
@@ -252,6 +315,7 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 	.elseif	eax == WM_CLOSE
 		invoke	EndDialog, dialogHandle, 0
 		mov hasFocuseSong,0
+		mov focusedSongIndex,500
 	.endif
 	xor eax, eax
 	ret
@@ -514,7 +578,7 @@ checkRepeatedSongName proc nameAddr:dword
 	
 	mov isNameRepeated,0
 	mov ecx,0
-	mov cnt,ecx
+	mov cnt,ecx																	;must use cnt to temporarily store ecx to avoid possible changes on it 
 	mov edi, OFFSET songList
 	.while ecx < currentTotalSongNumber && isNameRepeated == 0
 		invoke lstrcpy,ADDR tempName2, ADDR (songStructure PTR [edi]).songName

@@ -46,6 +46,8 @@ importSingleSong proto dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,fil
 checkSongNameSuffix proto nameAddr:dword,nameLength:dword
 checkSongName proto nameAddr:dword,nameLength:dword
 checkRepeatedSongName proto nameAddr:dword
+deleteSong proto dialogHandle:dword,deleteSongIndex:dword
+deleteSingleSong proto dialogHandle:dword,deleteSongIndex:dword
 
 
 
@@ -125,6 +127,9 @@ currentSongIndex dword 0
 
 ;temporarily store the focused song index used to double click to play
 tempSongIndex dword 500
+focusedSongIndex dword 500
+
+blankSongName BYTE 1000 DUP(0)
 
 ;judge there is a song focused or not
 hasFocuseSong dword 0
