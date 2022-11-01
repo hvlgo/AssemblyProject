@@ -238,6 +238,7 @@ deleteSong proc dialogHandle:dword,deleteSongIndex:dword
 	mov eax,deleteSongIndex
 	.if eax != currentSongIndex
 		invoke deleteSingleSong,dialogHandle,deleteSongIndex
+		mov eax,deleteSongIndex
 		.if eax < currentSongIndex
 			dec currentSongIndex
 		.endif
