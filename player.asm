@@ -221,9 +221,11 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			invoke importSongToList, dialogHandle
 			mov eax, wParam
 		.elseif eax == IDC_DELETE
-			;#############
-			;TODO
-			;#############
+			.if currentTotalSongNumber != 0 && hasFocuseSong == 1
+				;#############
+				;TODO
+				;#############
+			.endif
 		.elseif eax == IDC_PLAY_FOCUSED
 			.if currentTotalSongNumber != 0 && hasFocuseSong == 1
 				invoke musicPlayControl, mainHandle, _BEGIN, currentSongIndex   ;change the song
@@ -458,6 +460,98 @@ checkPlay proc dialogHandle: dword
 	Ret
 checkPlay endp
 
+strLen proc strAddr:dword
+	mov esi,strAddr
+    mov ebx, 0
+	LENLOOP:
+		mov eax,[esi]
+		cmp eax, 0
+		je LENEXIT
+		add esi,1
+		add ebx,1
+		loop LENLOOP
+	LENEXIT:
+		mov eax, ebx
+		ret
+strLen endp
+
+checkSongNameSuffix proc nameAddr:dword,nameLength:dword
+	mov ecx,nameLength
+	dec ecx
+	mov esi,nameAddr
+	add esi,ecx
+	
+	mov bl,[esi]
+	.while ecx >= 0 && bl != '.'
+		dec ecx
+		dec esi
+		mov bl,[esi]
+	.endw
+
+	.if ecx == -1
+		mov eax,0
+	.else 
+		inc esi
+		invoke lstrcpy,ADDR tempName, esi
+		invoke strLen,ADDR tempName
+		.if eax == 3
+			.if tempName[0] == 'w' && tempName[1] == 'm' && tempName[2] == 'a'
+				mov eax,1
+			.elseif tempName[0] == 'c' && tempName[1] == 'd' && tempName[2] == 'a'
+				mov eax,1
+			.elseif tempName[0] == 'w' && tempName[1] == 'a' && tempName[2] == 'v'
+				mov eax,1
+			.elseif tempName[0] == 'm' && tempName[1] == 'p' && tempName[2] == '3'
+				mov eax,1
+			.elseif tempName[0] == 'm' && tempName[1] == '4' && tempName[2] == 'a'
+				mov eax,1
+			.else
+				mov eax,0
+			.endif
+		.elseif eax == 4
+			.if tempName[0] == 'f' && tempName[1] == 'l' && tempName[2] == 'a' && tempName[3] == 'c'
+				mov eax,1
+			.else
+				mov eax,0
+			.endif
+		.else
+			mov eax,0
+		.endif
+	.endif
+
+	ret
+checkSongNameSuffix endp
+
+
+importSingleSong proc dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,fileOffset:word
+	mov esi,lpstrAddr
+	mov ebx,0
+	mov bx,fileOffset		;not the same size,should change to the same
+	add esi,ebx							;now file name stored in the esi(beginning address)
+	invoke lstrcpy,tempPathAddr, esi	;now file name stored in the tempPath
+
+	invoke strLen,tempPathAddr
+	invoke checkSongNameSuffix,tempPathAddr,eax
+
+	.if eax == 1
+		;print the file name
+		invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_ADDSTRING, 0, tempPathAddr
+
+		mov edi, OFFSET songList
+		mov ebx, SIZEOF songStructure
+		imul ebx, currentTotalSongNumber
+		add edi, ebx					;the  beginning address of the new song
+		invoke lstrcpy, ADDR (songStructure PTR [edi]).songName, tempPathAddr
+		invoke lstrcpy, ADDR (songStructure PTR [edi]).songPath, lpstrAddr
+
+		;total number ++
+		add currentTotalSongNumber,1
+	.endif
+
+	ret
+importSingleSong endp
+
+
 ;######################################################
 ;add a music to the list after the import button pushed
 ;param:
@@ -476,25 +570,7 @@ importSongToList proc dialogHandle: dword
 	.if eax
 		;get the parent path and the true path of the selected file(in turn)
 		invoke lstrcpyn, ADDR tempPath, ADDR lpstrFileNames, fileDialog.nFileOffset
-
-		mov esi,OFFSET lpstrFileNames
-		mov ebx,0
-		mov bx,fileDialog.nFileOffset		;not the same size,should change to the same
-		add esi,ebx							;now file name stored in the esi(beginning address)
-		invoke lstrcpy, ADDR tempPath, esi	;now file name stored in the tempPath
-
-		;print the file name
-		invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_ADDSTRING, 0, esi
-
-		mov edi, OFFSET songList
-		mov ebx, SIZEOF songStructure
-		imul ebx, currentTotalSongNumber
-		add edi, ebx					;the  beginning address of the new song
-		invoke lstrcpy, ADDR (songStructure PTR [edi]).songName, ADDR tempPath
-		invoke lstrcpy, ADDR (songStructure PTR [edi]).songPath, ADDR lpstrFileNames
-
-		;total number ++
-		add currentTotalSongNumber,1
+		invoke importSingleSong, dialogHandle, ADDR tempPath, ADDR lpstrFileNames, fileDialog.nFileOffset
 	.endif
 
 	ret

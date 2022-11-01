@@ -42,6 +42,9 @@ changeVolumeIcon proto dialogHandle: dword, state: byte
 displaySongName proto dialogHandle : dword, curIndex : dword
 playModeControl proto dialogHandle : dword, mode : byte
 nextMode proto mode : byte
+importSingleSong proto dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,fileOffset:word
+checkSongNameSuffix proto nameAddr:dword,nameLength:dword
+strLen proto strAddr:dword
 
 
 
