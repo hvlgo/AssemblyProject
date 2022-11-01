@@ -44,7 +44,8 @@ playModeControl proto dialogHandle : dword, mode : byte
 nextMode proto mode : byte
 importSingleSong proto dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,fileOffset:word
 checkSongNameSuffix proto nameAddr:dword,nameLength:dword
-strLen proto strAddr:dword
+checkSongName proto nameAddr:dword,nameLength:dword
+checkRepeatedSongName proto nameAddr:dword
 
 
 
@@ -130,6 +131,7 @@ hasFocuseSong dword 0
 
 ;temporarily store the filename
 tempName BYTE 1000 dup(0)
+tempName2 BYTE 1000 dup(0)
 
 ;open the file dialog
 fileDialog OPENFILENAME<>

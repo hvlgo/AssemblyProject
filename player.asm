@@ -460,21 +460,6 @@ checkPlay proc dialogHandle: dword
 	Ret
 checkPlay endp
 
-strLen proc strAddr:dword
-	mov esi,strAddr
-    mov ebx, 0
-	LENLOOP:
-		mov eax,[esi]
-		cmp eax, 0
-		je LENEXIT
-		add esi,1
-		add ebx,1
-		loop LENLOOP
-	LENEXIT:
-		mov eax, ebx
-		ret
-strLen endp
-
 checkSongNameSuffix proc nameAddr:dword,nameLength:dword
 	mov ecx,nameLength
 	dec ecx
@@ -493,7 +478,8 @@ checkSongNameSuffix proc nameAddr:dword,nameLength:dword
 	.else 
 		inc esi
 		invoke lstrcpy,ADDR tempName, esi
-		invoke strLen,ADDR tempName
+		invoke lstrlen,ADDR tempName
+
 		.if eax == 3
 			.if tempName[0] == 'w' && tempName[1] == 'm' && tempName[2] == 'a'
 				mov eax,1
@@ -522,6 +508,48 @@ checkSongNameSuffix proc nameAddr:dword,nameLength:dword
 	ret
 checkSongNameSuffix endp
 
+checkRepeatedSongName proc nameAddr:dword
+	local isNameRepeated:dword
+	local cnt:dword
+	
+	mov isNameRepeated,0
+	mov ecx,0
+	mov cnt,ecx
+	mov edi, OFFSET songList
+	.while ecx < currentTotalSongNumber && isNameRepeated == 0
+		invoke lstrcpy,ADDR tempName2, ADDR (songStructure PTR [edi]).songName
+		invoke lstrcmp,nameAddr,ADDR tempName2
+		.if eax ==0
+			mov isNameRepeated,1
+		.endif
+		add edi, SIZEOF songStructure
+		inc cnt
+		mov ecx,cnt
+	.endw
+
+	.if isNameRepeated == 0
+		mov eax,0
+	.else
+		mov eax,1
+	.endif
+	ret
+checkRepeatedSongName endp
+
+checkSongName proc nameAddr:dword,nameLength:dword
+	invoke checkSongNameSuffix,nameAddr,nameLength
+	.if eax == 1
+		invoke checkRepeatedSongName,nameAddr
+		.if eax == 1
+			mov eax,0
+		.else
+			mov eax,1
+		.endif
+	.else
+		mov eax,0
+	.endif
+	ret
+checkSongName endp
+
 
 importSingleSong proc dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,fileOffset:word
 	mov esi,lpstrAddr
@@ -530,8 +558,8 @@ importSingleSong proc dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,file
 	add esi,ebx							;now file name stored in the esi(beginning address)
 	invoke lstrcpy,tempPathAddr, esi	;now file name stored in the tempPath
 
-	invoke strLen,tempPathAddr
-	invoke checkSongNameSuffix,tempPathAddr,eax
+	invoke lstrlen,tempPathAddr
+	invoke checkSongName,tempPathAddr,eax
 
 	.if eax == 1
 		;print the file name
