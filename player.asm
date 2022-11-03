@@ -64,10 +64,13 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			invoke nextMode, playMode
 			mov playMode, al
 			invoke playModeControl, dialogHandle, playMode
+		.elseif eax == IDC_LYRICBUTTON
+			invoke changeLycState, dialogHandle
 		.endif
 	.elseif eax == WM_TIMER	
 		.if playButtonState == _PLAY		
 			invoke changeProgressBar, dialogHandle
+			invoke displayLyric, dialogHandle
 			invoke checkPlay, dialogHandle	; check if finished
 		.endif
 	.elseif eax == WM_HSCROLL
@@ -479,6 +482,9 @@ changeVolumeIcon endp
 ;	index: the index of the music of list
 ;######################################################
 playSong proc dialogHandle: dword, index: dword
+	; find the lyrics file
+	invoke readLrcFile, dialogHandle, index
+
 	; accept path to open the song
 	mov edi, OFFSET songList
 	mov ebx, SIZEOF songStructure
@@ -802,5 +808,221 @@ nextMode proc mode : byte
 
 	ret
 nextMode endp
+
+
+; ######################################################
+; read the lrc file from the path of songlist
+; param:
+;	dialogHandle: handle, index: index of the song
+; ######################################################
+readLrcFile proc dialogHandle:dword, index:dword
+	local hFile: dword
+	local currentTime: dword
+	local dscale: dword
+	local offs: dword
+	local times: dword
+
+	mov lyricLines, 0
+	
+	mov offs, 48 ;asc to int 0
+	
+	; get the path
+	mov edi, OFFSET songList
+	mov ebx, SIZEOF songStructure
+	imul ebx, index
+	add edi, ebx
+	invoke lstrcpy, addr lrcFile, addr (songStructure PTR [edi]).songPath
+	
+	; find '.' and add 'lrc'
+	invoke StrRStrI,addr lrcFile, NULL, addr point
+	mov esi, eax
+	invoke lstrcpy,esi, addr lrcSuffix
+
+	invoke CreateFile,addr lrcFile, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+	mov hFile, eax
+	; failed to open
+	.if hFile == INVALID_HANDLE_VALUE
+		mov hasLyric, byte ptr 0
+		invoke SendDlgItemMessage, dialogHandle, IDC_Lyric, WM_SETTEXT, 0, addr noLyricText
+	; has lyrics
+	.else
+		mov hasLyric, byte ptr 1
+		mov currentLyricIndex, 0
+		invoke ReadFile, hFile, addr lrcBuffer, sizeof lrcBuffer, addr actualReadBytes, NULL
+		
+		; find next sentence
+		mov times, 0
+		invoke StrStrI,addr lrcBuffer, addr lyricNextSentence
+		mov esi, eax
+
+		;[00:00.84]´Ê£ºWILLIUS/RK
+
+		L1:
+		movzx ebx, byte ptr [esi+1]
+		; jump to the num
+		.if ebx>=48;'0'
+			.if ebx<=57;'9'
+				;lyric progress min:sec.centisec
+				movzx eax, byte ptr [esi+1]
+				sub eax, offs
+				mov dscale, 10
+				mul dscale
+				
+				movzx ebx, byte ptr [esi+2]
+				sub ebx, offs
+				add eax, ebx
+				mov dscale, 60
+				mul dscale
+				
+				push eax
+				
+				movzx eax, byte ptr [esi+4]
+				sub eax, offs
+				mov dscale, 10
+				mul dscale
+				
+				movzx ebx, byte ptr [esi+5]
+				sub ebx, offs
+				add eax, ebx
+				
+				pop ebx
+				
+				add eax, ebx
+				
+				mov dscale, 100
+				mul dscale
+				
+				push eax
+				
+				movzx eax, byte ptr [esi+7]
+				sub eax, offs
+				mov dscale, 10
+				mul dscale
+				
+				movzx ebx, byte ptr [esi+8]
+				sub ebx,offs
+				add eax, ebx
+				
+				pop ebx
+				add eax, ebx
+				
+				mov dscale, 10
+				mul dscale
+				
+				mov currentTime, eax
+				mov eax, times
+				mov ebx, type dword
+				mul ebx
+				mov ebx, currentTime
+				mov [lyricTimes + eax], ebx
+				mov [lyricAddrs + eax], esi
+				
+				invoke StrStrI,addr [esi+1], addr lyricNextSentence
+				.if eax != 0
+					mov esi, eax
+			
+					inc times
+					jmp L1
+				.else
+					mov eax, times
+					mov maxLyricIndex, eax
+					jmp _END
+				.endif
+			; if ebx > 9
+			.else
+				invoke StrStrI,addr [esi+1], addr lyricNextSentence
+				mov esi, eax
+				cmp eax, 0
+				jne L1
+				jmp _END
+			.endif
+		.else
+			invoke StrStrI,addr [esi+1], addr lyricNextSentence
+			mov esi, eax
+			cmp eax, 0
+			jne L1
+			jmp _END
+		.endif
+	.endif
+	_END:
+	invoke CloseHandle, hFile
+	
+	ret
+readLrcFile endp
+
+; ######################################################
+; show the lyrics 
+; param:
+;	dialogHandle: handle
+; ######################################################
+displayLyric proc dialogHandle: dword
+	local tmpLoop:dword
+	local currentTime:dword
+	local lastTime:dword
+	local curSongPos:dword
+	.if playButtonState == _PLAY
+		.if hasLyric == 1
+			.if lyricVisible == 1
+				invoke mciSendString, addr getPositionCommand, addr songPosition, 32, NULL
+				invoke StrToInt, addr songPosition
+				mov curSongPos, eax
+				
+				
+				mov tmpLoop, 0
+				mov lastTime, 0
+				mov currentTime, 0
+				mov edx, tmpLoop
+				.while edx <= maxLyricIndex
+					mov eax, tmpLoop
+					mov ebx, type dword
+					mul ebx
+					
+					mov ebx, lyricTimes[eax]
+					mov currentTime, ebx
+					.if ebx > curSongPos
+						
+						mov edi, lyricAddrs[eax]
+						mov ebx, tmpLoop
+						.if ebx == 0
+							invoke SendDlgItemMessage, dialogHandle, IDC_Lyric, WM_SETTEXT, 0, addr lyricPreparation
+						.else
+							mov eax, tmpLoop
+							mov ebx, type dword
+							mul ebx
+							
+							sub eax, type dword
+							mov esi, lyricAddrs[eax]
+							mov edx, edi
+							sub edx, esi
+							sub edx, 10
+							invoke lstrcpyn, addr longStr, addr [esi+10], edx
+							invoke SendDlgItemMessage, dialogHandle, IDC_Lyric, WM_SETTEXT, 0, addr longStr
+						.endif
+						jmp dL_LEND
+					.endif
+					inc tmpLoop
+					mov edx, tmpLoop
+				.endw
+			.endif
+		.endif
+	.endif
+	dL_LEND:
+	ret
+displayLyric endp
+
+; ######################################################
+; change the lyric button state
+; param:
+;	dialogHandle: handle
+; ######################################################
+changeLycState proc dialogHandle: dword
+	.if lyricVisible == 1
+		mov lyricVisible, 0
+		invoke SendDlgItemMessage, dialogHandle, IDC_Lyric, WM_SETTEXT, 0, addr lyricEmpty
+	.else
+		mov lyricVisible, 1
+	.endif
+	ret
+changeLycState endp
 
 end start

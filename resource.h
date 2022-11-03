@@ -29,6 +29,9 @@
 #define IDC_NAMESHOW                    1014
 #define IDC_VOLBUTTON2                  1015
 #define IDC_PLAYMODE                    1015
+#define IDC_Lyric                       1016
+#define IDC_BUTTON1                     1017
+#define IDC_LYRICBUTTON                 1017
 #define IDC_VOLUME                      1020
 #define IDC_VOLSHOW                     1021
 #define IDC_PROSHOW                     1111
@@ -40,7 +43,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1015
+#define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

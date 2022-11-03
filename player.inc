@@ -48,7 +48,9 @@ checkSongName proto nameAddr:dword,nameLength:dword
 checkRepeatedSongName proto nameAddr:dword
 deleteSong proto dialogHandle:dword,deleteSongIndex:dword
 deleteSingleSong proto dialogHandle:dword,deleteSongIndex:dword
-
+readLrcFile proto dialogHandle:dword, index:dword
+displayLyric proto dialogHandle:dword
+changeLycState proto dialogHandle:dword
 
 
 ;the struct of the song
@@ -57,6 +59,11 @@ songStructure STRUCT
 	songPath BYTE 1000 DUP(0)
 songStructure ends
 
+; the struct of lyrics
+Lyric STRUCT
+	sentence byte 100 dup(0)
+	time dword 0
+Lyric ends
 
 .const
 ; sequence id for the ui
@@ -78,6 +85,8 @@ IDC_VOLUME EQU 1020
 IDC_VOLSHOW EQU 1021
 IDC_NAMESHOW EQU 1014
 IDC_PLAYMODE EQU 1015
+IDC_Lyric EQU 1016
+IDC_LYRICBUTTON EQU 1017
 
 IDI_PLAY EQU 119
 IDI_PAUSE EQU 122
@@ -170,6 +179,29 @@ int2str byte '%d',0
 volumeSize dword 100
 hasSound byte 1
 currentVol dword ?
+
+; lyrics
+lyricArray Lyric 500 dup(<>)
+lyricLines dword 0
+	
+lyricAddrs dword 1000 dup(0)
+lyricTimes dword 1000 dup(0)
+currentLyricIndex dword 0
+maxLyricIndex dword 0
+	
+hasLyric byte 0
+lyricVisible dword 1
+lyricEmpty byte 0
+
+lyricNextSentence byte "[", 0
+noLyricText byte "壙涙梧簡",0
+longStr byte 1000 dup(0)
+lrcSuffix byte ".lrc", 0
+point byte ".", 0
+lrcBuffer byte 100000 dup(0)
+lrcFile byte 1000 dup(0)
+actualReadBytes dword 0
+lyricPreparation byte "，，，，，，",0
 
 ;handle
 mainHandle dword 0
