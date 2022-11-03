@@ -95,6 +95,8 @@ IDI_RANDOM              ICON                    "icon\\random.ico"
 
 IDI_SINGLE              ICON                    "icon\\single.ico"
 
+IDI_IYRIC               ICON                    "icon\\lyric.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -124,17 +126,17 @@ FONT 14, "Î¢ÈíÑÅºÚ Light", 290, 0, 0x86
 BEGIN
     ICON            IDI_LOCAL,IDC_LOCAL,292,61,20,20,SS_NOTIFY
     PUSHBUTTON      "Button2",IDC_PLAY,10,59,14,14,BS_ICON
-    CONTROL         "",IDC_Progress,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | TBS_NOTIFYBEFOREMOVE | WS_TABSTOP,7,37,268,16
+    CONTROL         "",IDC_Progress,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS  | WS_TABSTOP,7,37,268,16
     LTEXT           "00.00/00.00",IDC_PROSHOW,284,36,44,12
     ICON            IDI_PRE,IDC_PRE,38,61,20,20,SS_NOTIFY
     ICON            IDI_NEXT,IDC_NEXT,63,61,20,20,SS_NOTIFY
     CONTROL         "",IDC_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,148,62,100,15
     LTEXT           "0",IDC_VOLSHOW,255,61,18,10
-    PUSHBUTTON      "Button1",IDC_VOLBUTTON,127,59,14,14,BS_ICON | BS_NOTIFY
     LTEXT           "",IDC_NAMESHOW,8,0,275,13
     PUSHBUTTON      "Button1",IDC_PLAYMODE,89,59,14,14,BS_ICON
     LTEXT           "",IDC_Lyric,8,17,306,15
-    PUSHBUTTON      "Button1",IDC_LYRICBUTTON,107,59,16,14
+    PUSHBUTTON      "Button1",IDC_VOLBUTTON,127,59,14,14,BS_ICON | BS_NOTIFY
+    ICON            IDI_IYRIC,IDC_LYRICBUTTON,109,61,10,9,SS_NOTIFY
 END
 
 IDD_LIST DIALOGEX 0, 0, 310, 177
