@@ -1004,7 +1004,11 @@ displayLyric proc dialogHandle: dword
 					mov edx, tmpLoop
 				.endw
 			.endif
-		.endif
+		.else
+			.if lyricVisible == 1
+				invoke SendDlgItemMessage, dialogHandle, IDC_Lyric, WM_SETTEXT, 0, addr noLyricText
+			.endif
+		.endif 
 	.endif
 	dL_LEND:
 	ret
