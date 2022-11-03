@@ -43,7 +43,7 @@ changeVolumeIcon proto dialogHandle: dword, state: byte
 displaySongName proto dialogHandle : dword, curIndex : dword
 playModeControl proto dialogHandle : dword, mode : byte
 nextMode proto mode : byte
-importSingleSong proto dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,fileOffset:word
+importSingleSong proto lpstrAddr:dword,fileOffset:word
 checkSongNameSuffix proto nameAddr:dword,nameLength:dword
 checkSongName proto nameAddr:dword,nameLength:dword
 checkRepeatedSongName proto nameAddr:dword
@@ -51,7 +51,10 @@ deleteSong proto dialogHandle:dword,deleteSongIndex:dword
 deleteSingleSong proto dialogHandle:dword,deleteSongIndex:dword
 chooseBatchPath proto dialogHandle:dword
 batchImportSongs proto dialogHandle:dword
-
+readLrcFile proto dialogHandle:dword, index:dword
+displayLyric proto dialogHandle:dword
+changeLycState proto dialogHandle:dword
+firstPlay proto 
 
 
 ;the struct of the song
@@ -60,6 +63,11 @@ songStructure STRUCT
 	songPath BYTE 1000 DUP(0)
 songStructure ends
 
+; the struct of lyrics
+Lyric STRUCT
+	sentence byte 100 dup(0)
+	time dword 0
+Lyric ends
 
 .const
 ; sequence id for the ui
@@ -85,6 +93,8 @@ IDC_PATH_TIP EQU 1015
 IDC_PATH_EDITOR EQU 1016
 IDC_BATCH_IMPORT EQU 1012
 IDC_PATH EQU 1017
+IDC_Lyric EQU 1016
+IDC_LYRICBUTTON EQU 1017
 
 IDI_PLAY EQU 119
 IDI_PAUSE EQU 122
@@ -95,6 +105,7 @@ IDI_LOUD EQU 126
 IDI_LIST EQU 132
 IDI_RANDOM EQU 133
 IDI_SINGLE EQU 134
+IDI_LYRIC EQU 135
 
 ; state of the play button
 _PAUSE EQU 0
@@ -125,6 +136,11 @@ playMode byte 0
 
 ;song list
 songList songStructure 100 dup(<"0", "0">)
+
+scpath byte ".\music", 0
+scname byte ".\music\test.mp3", 0
+
+scname2 byte ".\music\test2.mp3",0
 
 ;total number of current songs 
 currentTotalSongNumber dword 0
@@ -185,13 +201,36 @@ volumeSize dword 100
 hasSound byte 1
 currentVol dword ?
 
+; lyrics
+lyricArray Lyric 500 dup(<>)
+lyricLines dword 0
+	
+lyricAddrs dword 1000 dup(0)
+lyricTimes dword 1000 dup(0)
+currentLyricIndex dword 0
+maxLyricIndex dword 0
+	
+hasLyric byte 0
+lyricVisible dword 1
+lyricEmpty byte 0
+
+lyricNextSentence byte "[", 0
+noLyricText byte "���޸��",0
+longStr byte 1000 dup(0)
+lrcSuffix byte ".lrc", 0
+point byte ".", 0
+lrcBuffer byte 100000 dup(0)
+lrcFile byte 1000 dup(0)
+actualReadBytes dword 0
+lyricPreparation byte "������������",0
+
 ;handle
 mainHandle dword 0
 
 ;test
 ansMsg BYTE "%d"
 changeRowMsg BYTE 0ah, 0dh, 0
-strMsg BYTE "%c"
+strMsg BYTE "%s"
 
 .data?
 ; the handle of the exec file itself
