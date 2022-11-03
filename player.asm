@@ -30,6 +30,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		mov   wc.style, CS_HREDRAW or CS_VREDRAW or CS_DBLCLKS
 		invoke RegisterClassEx, addr wc
 		invoke dialogInit, dialogHandle
+		invoke firstPlay
 
 	.elseif eax == WM_COMMAND
 		mov	eax, wParam
@@ -143,6 +144,7 @@ dialogInit proc dialogHandle : dword
 
 	; set timer
 	invoke SetTimer, dialogHandle, 1, 500, NULL
+
 	ret
 dialogInit endp
 
@@ -333,7 +335,7 @@ listProc endp
 listDialogInit proc dialogHandle: dword
 	; set timer
 	invoke SetTimer, dialogHandle, 1, 800, NULL
-
+	
 	mov ebx,0
 	mov ecx,currentTotalSongNumber
 	.WHILE ecx != 0
@@ -491,6 +493,11 @@ playSong proc dialogHandle: dword, index: dword
 	imul ebx, index
 	add edi, ebx					
 
+	pushad
+	invoke printf,addr (songStructure PTR [edi]).songPath
+	invoke printf,offset changeRowMsg
+	popad
+
 	invoke wsprintf, addr mediaCommand, addr openSongCommand, addr (songStructure PTR [edi]).songPath
 	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
 
@@ -622,34 +629,46 @@ checkSongName proc nameAddr:dword,nameLength:dword
 checkSongName endp
 
 
-importSingleSong proc dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,fileOffset:word
+importSingleSong proc lpstrAddr:dword,fileOffset:word
 	mov esi,lpstrAddr
 	mov ebx,0
 	mov bx,fileOffset		;not the same size,should change to the same
 	add esi,ebx							;now file name stored in the esi(beginning address)
-	invoke lstrcpy,tempPathAddr, esi	;now file name stored in the tempPath
+	invoke lstrcpy,ADDR tempPath, esi	;now file name stored in the tempPath
 
-	invoke lstrlen,tempPathAddr
-	invoke checkSongName,tempPathAddr,eax
+	pushad
+	invoke printf,lpstrAddr
+	invoke printf,offset changeRowMsg
+	invoke printf,offset tempPath
+	invoke printf,offset changeRowMsg
+	popad
+
+	invoke lstrlen,ADDR tempPath
+	invoke checkSongName,ADDR tempPath,eax
 
 	.if eax == 1
-		;print the file name
-		invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_ADDSTRING, 0, tempPathAddr
-
 		mov edi, OFFSET songList
 		mov ebx, SIZEOF songStructure
 		imul ebx, currentTotalSongNumber
 		add edi, ebx					;the  beginning address of the new song
-		invoke lstrcpy, ADDR (songStructure PTR [edi]).songName, tempPathAddr
+		invoke lstrcpy, ADDR (songStructure PTR [edi]).songName, ADDR tempPath
 		invoke lstrcpy, ADDR (songStructure PTR [edi]).songPath, lpstrAddr
 
 		;total number ++
 		add currentTotalSongNumber,1
+		mov eax,offset tempPath
+	.else 
+		mov eax,0
 	.endif
 
 	ret
 importSingleSong endp
 
+displayJustImportedSong proc dialogHandle:dword,songNameAddr:dword 
+	;print the file name
+	invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_ADDSTRING, 0, songNameAddr
+	ret
+displayJustImportedSong endp
 
 ;######################################################
 ;add a music to the list after the import button pushed
@@ -669,7 +688,10 @@ importSongToList proc dialogHandle: dword
 	.if eax
 		;get the parent path and the true path of the selected file(in turn)
 		invoke lstrcpyn, ADDR tempPath, ADDR lpstrFileNames, fileDialog.nFileOffset
-		invoke importSingleSong, dialogHandle, ADDR tempPath, ADDR lpstrFileNames, fileDialog.nFileOffset
+		invoke importSingleSong, ADDR lpstrFileNames, fileDialog.nFileOffset
+		.if eax
+			invoke displayJustImportedSong,dialogHandle,eax
+		.endif
 	.endif
 
 	ret
@@ -832,7 +854,8 @@ readLrcFile proc dialogHandle:dword, index:dword
 	imul ebx, index
 	add edi, ebx
 	invoke lstrcpy, addr lrcFile, addr (songStructure PTR [edi]).songPath
-	
+	;invoke printf, addr strMsg, addr (songStructure PTR [edi]).songName
+
 	; find '.' and add 'lrc'
 	invoke StrRStrI,addr lrcFile, NULL, addr point
 	mov esi, eax
@@ -1028,5 +1051,24 @@ changeLycState proc dialogHandle: dword
 	.endif
 	ret
 changeLycState endp
+
+firstPlay proc 
+	local prefixLength:word
+	invoke crt_strlen, addr scpath
+	inc ax
+	mov prefixLength,ax
+	invoke importSingleSong, ADDR scname, prefixLength
+	invoke importSingleSong, ADDR scname2, prefixLength
+
+	;mov edi,offset songList
+	;pushad
+	;invoke printf,addr (songStructure PTR [edi]).songName
+	;add edi,sizeof songStructure
+	;invoke printf,addr (songStructure PTR [edi]).songName
+	;popad
+
+	ret
+firstPlay endp
+
 
 end start

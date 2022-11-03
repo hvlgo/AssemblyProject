@@ -42,7 +42,7 @@ changeVolumeIcon proto dialogHandle: dword, state: byte
 displaySongName proto dialogHandle : dword, curIndex : dword
 playModeControl proto dialogHandle : dword, mode : byte
 nextMode proto mode : byte
-importSingleSong proto dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,fileOffset:word
+importSingleSong proto lpstrAddr:dword,fileOffset:word
 checkSongNameSuffix proto nameAddr:dword,nameLength:dword
 checkSongName proto nameAddr:dword,nameLength:dword
 checkRepeatedSongName proto nameAddr:dword
@@ -51,6 +51,7 @@ deleteSingleSong proto dialogHandle:dword,deleteSongIndex:dword
 readLrcFile proto dialogHandle:dword, index:dword
 displayLyric proto dialogHandle:dword
 changeLycState proto dialogHandle:dword
+firstPlay proto 
 
 
 ;the struct of the song
@@ -128,6 +129,11 @@ playMode byte 0
 
 ;song list
 songList songStructure 100 dup(<"0", "0">)
+
+scpath byte ".\music", 0
+scname byte ".\music\test.mp3", 0
+
+scname2 byte ".\music\test2.mp3",0
 
 ;total number of current songs 
 currentTotalSongNumber dword 0
@@ -210,7 +216,7 @@ mainHandle dword 0
 ;test
 ansMsg BYTE "%d"
 changeRowMsg BYTE 0ah, 0dh, 0
-strMsg BYTE "%c"
+strMsg BYTE "%s"
 
 .data?
 ; the handle of the exec file itself
