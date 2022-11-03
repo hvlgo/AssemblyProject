@@ -7,7 +7,7 @@ include winmm.inc
 include shlwapi.inc
 include Comdlg32.inc
 include msvcrt.inc
-
+include shell32.inc
 
 includelib	Comdlg32.lib
 includelib winmm.lib
@@ -16,6 +16,7 @@ includelib	user32.lib
 includelib	kernel32.lib
 includelib gdi32.lib
 includelib msvcrt.lib
+includelib shell32.lib
 
 ; function declare
 printf   proto C :ptr sbyte, :VARARG
@@ -48,6 +49,8 @@ checkSongName proto nameAddr:dword,nameLength:dword
 checkRepeatedSongName proto nameAddr:dword
 deleteSong proto dialogHandle:dword,deleteSongIndex:dword
 deleteSingleSong proto dialogHandle:dword,deleteSongIndex:dword
+chooseBatchPath proto dialogHandle:dword
+batchImportSongs proto dialogHandle:dword
 
 
 
@@ -78,6 +81,10 @@ IDC_VOLUME EQU 1020
 IDC_VOLSHOW EQU 1021
 IDC_NAMESHOW EQU 1014
 IDC_PLAYMODE EQU 1015
+IDC_PATH_TIP EQU 1015
+IDC_PATH_EDITOR EQU 1016
+IDC_BATCH_IMPORT EQU 1012
+IDC_PATH EQU 1017
 
 IDI_PLAY EQU 119
 IDI_PAUSE EQU 122
@@ -142,6 +149,13 @@ tempName2 BYTE 1000 dup(0)
 fileDialog OPENFILENAME<>
 lpstrFileNames BYTE 8000 DUP(0)
 tempPath BYTE 1000 DUP(0)
+
+;open the folder dialog
+folderDialog BROWSEINFO<>
+lpstrFolderNames BYTE 8000 DUP(0)
+importFolderPath BYTE 8000 DUP(0)
+findFileData WIN32_FIND_DATA<>
+firstPath BYTE "\\*"
 
 ; mci command
 getPositionCommand byte "status currentSong position", 0	

@@ -284,6 +284,7 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 				invoke deleteSong,dialogHandle,focusedSongIndex
 				mov hasFocuseSong,0
 				mov focusedSongIndex,500
+				mov eax, wParam
 			.endif
 		.elseif eax == IDC_PLAY_FOCUSED
 			.if currentTotalSongNumber != 0 && hasFocuseSong == 1
@@ -293,7 +294,15 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 				invoke	EndDialog, dialogHandle, 0
 				mov hasFocuseSong,0
 				mov focusedSongIndex,500
+				mov tempSongIndex,500
+				mov eax, wParam
 			.endif
+		.elseif eax == IDC_BATCH_IMPORT
+			invoke batchImportSongs,dialogHandle
+			mov eax, wParam
+		.elseif eax == IDC_PATH
+			invoke chooseBatchPath,dialogHandle
+			mov eax, wParam
 		.elseif ax == IDC_SONG_LIST
 			shr eax,16
 			.if ax == LBN_SELCHANGE	
@@ -306,17 +315,22 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 					invoke	EndDialog, dialogHandle, 0
 					mov hasFocuseSong,0
 					mov focusedSongIndex,500
+					mov tempSongIndex,500
 				.else
 					mov tempSongIndex,eax
 				.endif
 			.endif
+			mov eax, wParam
 		.endif
 	.elseif eax == WM_TIMER	
 		mov tempSongIndex,500
+		mov eax, wParam
 	.elseif	eax == WM_CLOSE
 		invoke	EndDialog, dialogHandle, 0
 		mov hasFocuseSong,0
 		mov focusedSongIndex,500
+		mov tempSongIndex,500
+		mov eax, wParam
 	.endif
 	xor eax, eax
 	ret
@@ -329,7 +343,7 @@ listProc endp
 ;######################################################
 listDialogInit proc dialogHandle: dword
 	; set timer
-	invoke SetTimer, dialogHandle, 1, 800, NULL
+	invoke SetTimer, dialogHandle, 1, 5000, NULL
 
 	mov ebx,0
 	mov ecx,currentTotalSongNumber
@@ -644,6 +658,34 @@ importSingleSong proc dialogHandle:dword,tempPathAddr:dword,lpstrAddr:dword,file
 	ret
 importSingleSong endp
 
+chooseBatchPath proc dialogHandle:dword
+	invoke	RtlZeroMemory,addr folderDialog,sizeof folderDialog
+	mov folderDialog.hwndOwner,NULL
+	mov folderDialog.pszDisplayName,offset lpstrFolderNames
+	mov folderDialog.ulFlags,BIF_DONTGOBELOWDOMAIN or BIF_RETURNONLYFSDIRS or BIF_NEWDIALOGSTYLE
+	invoke SHBrowseForFolder,addr folderDialog
+	.if eax
+		invoke SHGetPathFromIDList,eax,offset lpstrFolderNames
+		invoke SetDlgItemText,dialogHandle,IDC_PATH_EDITOR,addr lpstrFolderNames
+	.endif
+	ret
+chooseBatchPath endp
+
+batchImportSongs proc dialogHandle:dword
+	invoke GetDlgItemText,dialogHandle,IDC_PATH_EDITOR,addr importFolderPath,sizeof importFolderPath
+	invoke lstrlen,ADDR importFolderPath
+
+	.if eax != 0
+		invoke FindFirstFile,ADDR firstPath,ADDR findFileData
+		.if eax != -1
+			;#######################
+			;TODO
+			;#######################
+		.endif
+	.endif
+
+	ret
+batchImportSongs endp
 
 ;######################################################
 ;add a music to the list after the import button pushed
@@ -653,7 +695,7 @@ importSingleSong endp
 importSongToList proc dialogHandle: dword
 	invoke	RtlZeroMemory,addr fileDialog,sizeof fileDialog
 	mov	fileDialog.lStructSize,sizeof fileDialog
-	push	dialogHandle
+	push dialogHandle
 	pop	fileDialog.hwndOwner
 	mov	fileDialog.lpstrFile,offset lpstrFileNames
 	mov	fileDialog.nMaxFile,SIZEOF lpstrFileNames
