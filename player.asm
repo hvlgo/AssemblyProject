@@ -1167,6 +1167,11 @@ changeLycState proc dialogHandle: dword
 	ret
 changeLycState endp
 
+; ######################################################
+; import the init songs
+; param:
+;	dialogHandle: handle
+; ######################################################
 firstPlay proc dialogHandle:dword
 	invoke GetModuleHandle, NULL
 	mov hIn, eax
