@@ -318,7 +318,8 @@ listProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 				mov eax, wParam
 			.endif
 		.elseif eax == IDC_BATCH_IMPORT
-			invoke batchImportSongs,dialogHandle
+			invoke GetDlgItemText,dialogHandle,IDC_PATH_EDITOR,addr importFolderPath,sizeof importFolderPath
+			invoke batchImportSongs,dialogHandle,ADDR importFolderPath
 			mov eax, wParam
 		.elseif eax == IDC_PATH
 			invoke chooseBatchPath,dialogHandle
@@ -723,35 +724,35 @@ chooseBatchPath endp
 ;Batch import all songs under a specified folder
 ;param:
 ;	dialogHandle:the handle of the music list dialog
+;	folderPathAddr:the folder to traverse to import song
 ;######################################################
-batchImportSongs proc dialogHandle:dword
+batchImportSongs proc dialogHandle:dword,folderPathAddr:dword
 	local hFind:dword
 	local pathLen:dword
 
-	invoke GetDlgItemText,dialogHandle,IDC_PATH_EDITOR,addr importFolderPath,sizeof importFolderPath
-	invoke lstrlen,ADDR importFolderPath
+	invoke lstrlen,folderPathAddr
 
-	mov esi,offset importFolderPath
+	mov esi,folderPathAddr
 	add esi,eax
 	invoke lstrcpy,esi,addr catString
 
-	invoke lstrlen,ADDR importFolderPath
+	invoke lstrlen,folderPathAddr
 	mov pathLen,eax
 
 	.if pathLen != 0
-		mov esi,offset importFolderPath
+		mov esi,folderPathAddr
 		add esi,pathLen
 		invoke lstrcpy,esi, addr folderSuffix
 
-		invoke FindFirstFile,ADDR importFolderPath,ADDR findFileData
+		invoke FindFirstFile,folderPathAddr,ADDR findFileData
 		mov hFind,eax
 		.if hFind != INVALID_HANDLE_VALUE
 			invoke FindNextFile,hFind,ADDR findFileData
 			.while eax != 0			
-				mov esi,offset importFolderPath
+				mov esi,folderPathAddr
 				add esi,pathLen
 				invoke lstrcpy,esi, addr findFileData.cFileName
-				invoke importSingleSong,ADDR importFolderPath,pathLen
+				invoke importSingleSong,folderPathAddr,pathLen
 				.if eax
 					invoke displayJustImportedSong,dialogHandle,eax
 				.endif

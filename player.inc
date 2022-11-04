@@ -50,7 +50,7 @@ checkRepeatedSongName proto nameAddr:dword
 deleteSong proto dialogHandle:dword,deleteSongIndex:dword
 deleteSingleSong proto dialogHandle:dword,deleteSongIndex:dword
 chooseBatchPath proto dialogHandle:dword
-batchImportSongs proto dialogHandle:dword
+batchImportSongs proto dialogHandle:dword,folderPathAddr:dword
 readLrcFile proto dialogHandle:dword, index:dword
 displayLyric proto dialogHandle:dword
 changeLycState proto dialogHandle:dword
