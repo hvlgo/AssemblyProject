@@ -576,34 +576,34 @@ checkPlay endp
 ;######################################################
 checkSongNameSuffix proc nameAddr:dword,nameLength:dword
 	mov ecx,nameLength
-	dec ecx
 	mov esi,nameAddr
 	add esi,ecx
 	
-	mov bl,[esi]
-	.while ecx >= 0 && bl != '.'
+	mov bl,[esi-1]
+	.while ecx > 0 && bl != '.'
 		dec ecx
 		dec esi
-		mov bl,[esi]
+		mov bl,[esi-1]
 	.endw
 
-	.if ecx == -1
+	.if ecx == 0
 		mov eax,0
 	.else 
-		inc esi
 		invoke lstrcpy,ADDR tempName, esi
 		invoke lstrlen,ADDR tempName
 
 		.if eax == 3
 			.if tempName[0] == 'w' && tempName[1] == 'm' && tempName[2] == 'a'
 				mov eax,1
-			.elseif tempName[0] == 'c' && tempName[1] == 'd' && tempName[2] == 'a'
+			.elseif tempName[0] == 'o' && tempName[1] == 'g' && tempName[2] == 'g'
 				mov eax,1
 			.elseif tempName[0] == 'w' && tempName[1] == 'a' && tempName[2] == 'v'
 				mov eax,1
 			.elseif tempName[0] == 'm' && tempName[1] == 'p' && tempName[2] == '3'
 				mov eax,1
 			.elseif tempName[0] == 'm' && tempName[1] == '4' && tempName[2] == 'a'
+				mov eax,1
+			.elseif tempName[0] == 'm' && tempName[1] == '4' && tempName[2] == 'r'
 				mov eax,1
 			.else
 				mov eax,0
