@@ -54,7 +54,7 @@ batchImportSongs proto dialogHandle:dword,folderPathAddr:dword
 readLrcFile proto dialogHandle:dword, index:dword
 displayLyric proto dialogHandle:dword
 changeLycState proto dialogHandle:dword
-firstPlay proto 
+firstPlay proto dialogHandle:dword
 displayJustImportedSong proto dialogHandle:dword,songNameAddr:dword 
 
 ;the struct of the song
@@ -137,11 +137,6 @@ playMode byte 0
 ;song list
 songList songStructure 100 dup(<"0", "0">)
 
-scpath byte ".\music\", 0
-scname byte ".\music\test.mp3", 0
-
-scname2 byte ".\music\test2.mp3",0
-
 ;total number of current songs 
 currentTotalSongNumber dword 0
 
@@ -177,6 +172,10 @@ findFileData WIN32_FIND_DATA<>
 catString BYTE "\",0
 folderSuffix BYTE "\*",0
 firstPath BYTE "D:\zfh\AssemblyProject\hw1\\*",0			;testMsg
+
+;used to get current path(which .exe file in)
+szFileName byte 8000 dup(0)
+scName byte "music",0
 
 ; mci command
 getPositionCommand byte "status currentSong position", 0	
@@ -232,6 +231,9 @@ lyricPreparation byte "，，，，，，",0
 ;handle of main dialog
 mainHandle dword 0
 
+;whether the list dialog is firstly inited
+listFirstInit dword 0
+
 ;test message
 ansMsg BYTE "%d"
 changeRowMsg BYTE 0ah, 0dh, 0
@@ -241,3 +243,4 @@ strMsg BYTE "%s"
 ; the handle of the exec file itself
 hInstance HINSTANCE ?
 mediaCommand byte ?		;mciSendString
+hIn HINSTANCE ?

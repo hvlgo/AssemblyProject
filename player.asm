@@ -30,7 +30,6 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 		mov   wc.style, CS_HREDRAW or CS_VREDRAW or CS_DBLCLKS
 		invoke RegisterClassEx, addr wc
 		invoke dialogInit, dialogHandle
-		invoke firstPlay
 
 	.elseif eax == WM_COMMAND
 		mov	eax, wParam
@@ -379,6 +378,12 @@ listDialogInit proc dialogHandle: dword
 		add ebx,1
 		sub ecx,1
 	.ENDW
+
+	.if listFirstInit == 0
+		mov listFirstInit,1
+		invoke firstPlay,dialogHandle
+	.endif
+
 	ret
 listDialogInit endp
 
@@ -734,7 +739,10 @@ batchImportSongs proc dialogHandle:dword,folderPathAddr:dword
 
 	mov esi,folderPathAddr
 	add esi,eax
-	invoke lstrcpy,esi,addr catString
+	mov bl,[esi-1]
+	.if bl != '\'
+		invoke lstrcpy,esi,addr catString
+	.endif
 
 	invoke lstrlen,folderPathAddr
 	mov pathLen,eax
@@ -952,7 +960,7 @@ readLrcFile proc dialogHandle:dword, index:dword
 	local currentTime: dword
 	local dscale: dword
 	local offs: dword
-	local times: dword
+	local ttimes: dword
 
 	mov lyricLines, 0
 	
@@ -983,7 +991,7 @@ readLrcFile proc dialogHandle:dword, index:dword
 		invoke ReadFile, hFile, addr lrcBuffer, sizeof lrcBuffer, addr actualReadBytes, NULL
 		
 		; find next sentence
-		mov times, 0
+		mov ttimes, 0
 		invoke StrStrI,addr lrcBuffer, addr lyricNextSentence
 		mov esi, eax
 
@@ -1040,7 +1048,7 @@ readLrcFile proc dialogHandle:dword, index:dword
 				mul dscale
 				
 				mov currentTime, eax
-				mov eax, times
+				mov eax, ttimes
 				mov ebx, type dword
 				mul ebx
 				mov ebx, currentTime
@@ -1051,10 +1059,10 @@ readLrcFile proc dialogHandle:dword, index:dword
 				.if eax != 0
 					mov esi, eax
 			
-					inc times
+					inc ttimes
 					jmp L1
 				.else
-					mov eax, times
+					mov eax, ttimes
 					mov maxLyricIndex, eax
 					jmp _END
 				.endif
@@ -1159,12 +1167,24 @@ changeLycState proc dialogHandle: dword
 	ret
 changeLycState endp
 
-firstPlay proc 
-	local prefixLength:dword
-	invoke crt_strlen, addr scpath
-	mov prefixLength,eax
-	invoke importSingleSong, ADDR scname, prefixLength
-	invoke importSingleSong, ADDR scname2, prefixLength
+firstPlay proc dialogHandle:dword
+	invoke GetModuleHandle, NULL
+	mov hIn, eax
+	invoke GetModuleFileName, hIn, addr szFileName, SIZEOF szFileName	;now the path which .exe file in is stored in the szFileName
+
+	mov esi,offset szFileName
+	invoke lstrlen,addr szFileName
+	add esi,eax
+	mov bl,[esi-1]
+	.while bl != '\'
+		dec esi
+		mov bl,[esi-1]
+	.endw
+
+	invoke lstrcpy,esi,addr scName
+
+	invoke batchImportSongs,dialogHandle,ADDR szFileName
+
 	ret
 firstPlay endp
 
