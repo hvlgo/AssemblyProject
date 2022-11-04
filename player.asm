@@ -211,6 +211,13 @@ playButtonControl proc dialogHandle : dword, state : byte
 	ret
 playButtonControl endp
 
+
+;######################################################
+;function to delete a single song
+;param:
+;	dialogHandle: the handle of the list dialog
+;	deleteSongIndex: the index of the song to be deleted in the list
+;######################################################
 deleteSingleSong proc dialogHandle:dword,deleteSongIndex:dword
 	invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_DELETESTRING, deleteSongIndex, 0
 
@@ -239,6 +246,14 @@ deleteSingleSong proc dialogHandle:dword,deleteSongIndex:dword
 	ret
 deleteSingleSong endp
 
+
+;######################################################
+;function to delete song
+;param:
+;	dialogHandle: the handle of the list dialog
+;	deleteSongIndex: the index of the song to be deleted in the list
+;This function will check if the song to be deleted is playing and handle each case separately.
+;######################################################
 deleteSong proc dialogHandle:dword,deleteSongIndex:dword
 	mov eax,deleteSongIndex
 	.if eax != currentSongIndex
@@ -547,6 +562,12 @@ checkPlay proc dialogHandle: dword
 	Ret
 checkPlay endp
 
+;######################################################
+;Check whether the suffix of the song name meets the requirements, only accept songs with the suffix mp3, m4a, wma, wav, cda
+;param:
+;	nameAddr:the address of the song name to be checked
+;	nameLength:the length of the song name to be checked
+;######################################################
 checkSongNameSuffix proc nameAddr:dword,nameLength:dword
 	mov ecx,nameLength
 	dec ecx
@@ -589,6 +610,12 @@ checkSongNameSuffix proc nameAddr:dword,nameLength:dword
 	ret
 checkSongNameSuffix endp
 
+
+;######################################################
+;Check if the song name is already in the song list
+;param:
+;	nameAddr:the address of the song name to be checked
+;######################################################
 checkRepeatedSongName proc nameAddr:dword
 	local isNameRepeated:dword
 	local cnt:dword
@@ -616,6 +643,13 @@ checkRepeatedSongName proc nameAddr:dword
 	ret
 checkRepeatedSongName endp
 
+
+;######################################################
+;Check if the song name matches the requirements
+;param:
+;	nameAddr:the address of the song name to be checked
+;	nameLength:the length of the song name to be checked
+;######################################################
 checkSongName proc nameAddr:dword,nameLength:dword
 	invoke checkSongNameSuffix,nameAddr,nameLength
 	.if eax == 1
@@ -632,6 +666,12 @@ checkSongName proc nameAddr:dword,nameLength:dword
 checkSongName endp
 
 
+;######################################################
+;import a single song to song list
+;param:
+;	lpstrAddr:full path of the song to be imported
+;	fileOffset:The length of the parent directory of the song (including the last \)
+;######################################################
 importSingleSong proc lpstrAddr:dword,fileOffset:dword
 	mov esi,lpstrAddr
 	mov ebx,fileOffset
@@ -659,6 +699,12 @@ importSingleSong proc lpstrAddr:dword,fileOffset:dword
 	ret
 importSingleSong endp
 
+
+;######################################################
+;Select the path to batch import
+;param:
+;	dialogHandle:the handle of the music list dialog
+;######################################################
 chooseBatchPath proc dialogHandle:dword
 	invoke	RtlZeroMemory,addr folderDialog,sizeof folderDialog
 	mov folderDialog.hwndOwner,NULL
@@ -672,6 +718,12 @@ chooseBatchPath proc dialogHandle:dword
 	ret
 chooseBatchPath endp
 
+
+;######################################################
+;Batch import all songs under a specified folder
+;param:
+;	dialogHandle:the handle of the music list dialog
+;######################################################
 batchImportSongs proc dialogHandle:dword
 	local hFind:dword
 	local pathLen:dword
@@ -699,12 +751,6 @@ batchImportSongs proc dialogHandle:dword
 				mov esi,offset importFolderPath
 				add esi,pathLen
 				invoke lstrcpy,esi, addr findFileData.cFileName
-
-				pushad
-				invoke printf,addr importFolderPath 
-				invoke printf,offset changeRowMsg
-				popad
-
 				invoke importSingleSong,ADDR importFolderPath,pathLen
 				.if eax
 					invoke displayJustImportedSong,dialogHandle,eax
@@ -717,6 +763,14 @@ batchImportSongs proc dialogHandle:dword
 
 	ret
 batchImportSongs endp
+
+
+;######################################################
+;Display the song name just imported on the song list
+;param:
+;	dialogHandle:the handle of the music list dialog
+;	songNameAddr:the song name to be displayed
+;######################################################
 displayJustImportedSong proc dialogHandle:dword,songNameAddr:dword 
 	;print the file name
 	invoke SendDlgItemMessage, dialogHandle, IDC_SONG_LIST, LB_ADDSTRING, 0, songNameAddr

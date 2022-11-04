@@ -152,6 +152,7 @@ currentSongIndex dword 0
 tempSongIndex dword 500
 focusedSongIndex dword 500
 
+;used to init the memory temporarily storing the song name 
 blankSongName BYTE 1000 DUP(0)
 
 ;judge there is a song focused or not
@@ -170,10 +171,12 @@ tempPath BYTE 1000 DUP(0)
 folderDialog BROWSEINFO<>
 lpstrFolderNames BYTE 8000 DUP(0)
 importFolderPath BYTE 8000 DUP(0)
+
+;used to traverse all files under the selected folder
 findFileData WIN32_FIND_DATA<>
 catString BYTE "\",0
 folderSuffix BYTE "\*",0
-firstPath BYTE "D:\zfh\AssemblyProject\hw1\\*",0  ;testMsg
+firstPath BYTE "D:\zfh\AssemblyProject\hw1\\*",0			;testMsg
 
 ; mci command
 getPositionCommand byte "status currentSong position", 0	
@@ -226,10 +229,10 @@ lrcFile byte 1000 dup(0)
 actualReadBytes dword 0
 lyricPreparation byte "，，，，，，",0
 
-;handle
+;handle of main dialog
 mainHandle dword 0
 
-;test
+;test message
 ansMsg BYTE "%d"
 changeRowMsg BYTE 0ah, 0dh, 0
 strMsg BYTE "%s"
