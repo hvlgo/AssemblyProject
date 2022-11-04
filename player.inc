@@ -43,7 +43,7 @@ changeVolumeIcon proto dialogHandle: dword, state: byte
 displaySongName proto dialogHandle : dword, curIndex : dword
 playModeControl proto dialogHandle : dword, mode : byte
 nextMode proto mode : byte
-importSingleSong proto lpstrAddr:dword,fileOffset:word
+importSingleSong proto lpstrAddr:dword,fileOffset:dword
 checkSongNameSuffix proto nameAddr:dword,nameLength:dword
 checkSongName proto nameAddr:dword,nameLength:dword
 checkRepeatedSongName proto nameAddr:dword
@@ -55,7 +55,7 @@ readLrcFile proto dialogHandle:dword, index:dword
 displayLyric proto dialogHandle:dword
 changeLycState proto dialogHandle:dword
 firstPlay proto 
-
+displayJustImportedSong proto dialogHandle:dword,songNameAddr:dword 
 
 ;the struct of the song
 songStructure STRUCT
@@ -137,7 +137,7 @@ playMode byte 0
 ;song list
 songList songStructure 100 dup(<"0", "0">)
 
-scpath byte ".\music", 0
+scpath byte ".\music\", 0
 scname byte ".\music\test.mp3", 0
 
 scname2 byte ".\music\test2.mp3",0
@@ -171,7 +171,9 @@ folderDialog BROWSEINFO<>
 lpstrFolderNames BYTE 8000 DUP(0)
 importFolderPath BYTE 8000 DUP(0)
 findFileData WIN32_FIND_DATA<>
-firstPath BYTE "\\*"
+catString BYTE "\",0
+folderSuffix BYTE "\*",0
+firstPath BYTE "D:\zfh\AssemblyProject\hw1\\*",0  ;testMsg
 
 ; mci command
 getPositionCommand byte "status currentSong position", 0	
@@ -215,14 +217,14 @@ lyricVisible dword 1
 lyricEmpty byte 0
 
 lyricNextSentence byte "[", 0
-noLyricText byte "ï¿½ï¿½ï¿½Þ¸ï¿½ï¿½",0
+noLyricText byte "ÔÝÎÞ¸è´Ê",0
 longStr byte 1000 dup(0)
 lrcSuffix byte ".lrc", 0
 point byte ".", 0
 lrcBuffer byte 100000 dup(0)
 lrcFile byte 1000 dup(0)
 actualReadBytes dword 0
-lyricPreparation byte "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",0
+lyricPreparation byte "¡¤¡¤¡¤¡¤¡¤¡¤",0
 
 ;handle
 mainHandle dword 0

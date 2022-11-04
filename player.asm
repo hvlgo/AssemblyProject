@@ -507,11 +507,6 @@ playSong proc dialogHandle: dword, index: dword
 	imul ebx, index
 	add edi, ebx					
 
-	pushad
-	invoke printf,addr (songStructure PTR [edi]).songPath
-	invoke printf,offset changeRowMsg
-	popad
-
 	invoke wsprintf, addr mediaCommand, addr openSongCommand, addr (songStructure PTR [edi]).songPath
 	invoke mciSendString, addr mediaCommand, NULL, 0, NULL
 
@@ -586,12 +581,6 @@ checkSongNameSuffix proc nameAddr:dword,nameLength:dword
 			.else
 				mov eax,0
 			.endif
-		.elseif eax == 4
-			.if tempName[0] == 'f' && tempName[1] == 'l' && tempName[2] == 'a' && tempName[3] == 'c'
-				mov eax,1
-			.else
-				mov eax,0
-			.endif
 		.else
 			mov eax,0
 		.endif
@@ -643,19 +632,11 @@ checkSongName proc nameAddr:dword,nameLength:dword
 checkSongName endp
 
 
-importSingleSong proc lpstrAddr:dword,fileOffset:word
+importSingleSong proc lpstrAddr:dword,fileOffset:dword
 	mov esi,lpstrAddr
-	mov ebx,0
-	mov bx,fileOffset		;not the same size,should change to the same
+	mov ebx,fileOffset
 	add esi,ebx							;now file name stored in the esi(beginning address)
 	invoke lstrcpy,ADDR tempPath, esi	;now file name stored in the tempPath
-
-	pushad
-	invoke printf,lpstrAddr
-	invoke printf,offset changeRowMsg
-	invoke printf,offset tempPath
-	invoke printf,offset changeRowMsg
-	popad
 
 	invoke lstrlen,ADDR tempPath
 	invoke checkSongName,ADDR tempPath,eax
@@ -692,15 +673,45 @@ chooseBatchPath proc dialogHandle:dword
 chooseBatchPath endp
 
 batchImportSongs proc dialogHandle:dword
+	local hFind:dword
+	local pathLen:dword
+
 	invoke GetDlgItemText,dialogHandle,IDC_PATH_EDITOR,addr importFolderPath,sizeof importFolderPath
 	invoke lstrlen,ADDR importFolderPath
 
-	.if eax != 0
-		invoke FindFirstFile,ADDR firstPath,ADDR findFileData
-		.if eax != -1
-			;#######################
-			;TODO
-			;#######################
+	mov esi,offset importFolderPath
+	add esi,eax
+	invoke lstrcpy,esi,addr catString
+
+	invoke lstrlen,ADDR importFolderPath
+	mov pathLen,eax
+
+	.if pathLen != 0
+		mov esi,offset importFolderPath
+		add esi,pathLen
+		invoke lstrcpy,esi, addr folderSuffix
+
+		invoke FindFirstFile,ADDR importFolderPath,ADDR findFileData
+		mov hFind,eax
+		.if hFind != INVALID_HANDLE_VALUE
+			invoke FindNextFile,hFind,ADDR findFileData
+			.while eax != 0			
+				mov esi,offset importFolderPath
+				add esi,pathLen
+				invoke lstrcpy,esi, addr findFileData.cFileName
+
+				pushad
+				invoke printf,addr importFolderPath 
+				invoke printf,offset changeRowMsg
+				popad
+
+				invoke importSingleSong,ADDR importFolderPath,pathLen
+				.if eax
+					invoke displayJustImportedSong,dialogHandle,eax
+				.endif
+
+				invoke FindNextFile,hFind,ADDR findFileData
+			.endw
 		.endif
 	.endif
 
@@ -730,7 +741,9 @@ importSongToList proc dialogHandle: dword
 	.if eax
 		;get the parent path and the true path of the selected file(in turn)
 		invoke lstrcpyn, ADDR tempPath, ADDR lpstrFileNames, fileDialog.nFileOffset
-		invoke importSingleSong, ADDR lpstrFileNames, fileDialog.nFileOffset
+		mov ebx,0
+		mov bx,fileDialog.nFileOffset
+		invoke importSingleSong, ADDR lpstrFileNames, ebx
 		.if eax
 			invoke displayJustImportedSong,dialogHandle,eax
 		.endif
@@ -896,7 +909,6 @@ readLrcFile proc dialogHandle:dword, index:dword
 	imul ebx, index
 	add edi, ebx
 	invoke lstrcpy, addr lrcFile, addr (songStructure PTR [edi]).songPath
-	;invoke printf, addr strMsg, addr (songStructure PTR [edi]).songName
 
 	; find '.' and add 'lrc'
 	invoke StrRStrI,addr lrcFile, NULL, addr point
@@ -919,8 +931,6 @@ readLrcFile proc dialogHandle:dword, index:dword
 		mov times, 0
 		invoke StrStrI,addr lrcBuffer, addr lyricNextSentence
 		mov esi, eax
-
-		;[00:00.84]�ʣ�WILLIUS/RK
 
 		L1:
 		movzx ebx, byte ptr [esi+1]
@@ -1095,20 +1105,11 @@ changeLycState proc dialogHandle: dword
 changeLycState endp
 
 firstPlay proc 
-	local prefixLength:word
+	local prefixLength:dword
 	invoke crt_strlen, addr scpath
-	inc ax
-	mov prefixLength,ax
+	mov prefixLength,eax
 	invoke importSingleSong, ADDR scname, prefixLength
 	invoke importSingleSong, ADDR scname2, prefixLength
-
-	;mov edi,offset songList
-	;pushad
-	;invoke printf,addr (songStructure PTR [edi]).songName
-	;add edi,sizeof songStructure
-	;invoke printf,addr (songStructure PTR [edi]).songName
-	;popad
-
 	ret
 firstPlay endp
 
