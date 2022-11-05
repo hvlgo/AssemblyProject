@@ -135,7 +135,7 @@ playButtonState byte 0
 playMode byte 0
 
 ;song list
-songList songStructure 100 dup(<"0", "0">)
+songList songStructure 300 dup(<"0", "0">)
 
 ;total number of current songs 
 currentTotalSongNumber dword 0

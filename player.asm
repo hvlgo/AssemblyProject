@@ -681,29 +681,32 @@ checkSongName endp
 ;	fileOffset:The length of the parent directory of the song (including the last \)
 ;######################################################
 importSingleSong proc lpstrAddr:dword,fileOffset:dword
-	mov esi,lpstrAddr
-	mov ebx,fileOffset
-	add esi,ebx							;now file name stored in the esi(beginning address)
-	invoke lstrcpy,ADDR tempPath, esi	;now file name stored in the tempPath
+	.if currentTotalSongNumber < 300
+		mov esi,lpstrAddr
+		mov ebx,fileOffset
+		add esi,ebx							;now file name stored in the esi(beginning address)
+		invoke lstrcpy,ADDR tempPath, esi	;now file name stored in the tempPath
 
-	invoke lstrlen,ADDR tempPath
-	invoke checkSongName,ADDR tempPath,eax
+		invoke lstrlen,ADDR tempPath
+		invoke checkSongName,ADDR tempPath,eax
 
-	.if eax == 1
-		mov edi, OFFSET songList
-		mov ebx, SIZEOF songStructure
-		imul ebx, currentTotalSongNumber
-		add edi, ebx					;the  beginning address of the new song
-		invoke lstrcpy, ADDR (songStructure PTR [edi]).songName, ADDR tempPath
-		invoke lstrcpy, ADDR (songStructure PTR [edi]).songPath, lpstrAddr
+		.if eax == 1
+			mov edi, OFFSET songList
+			mov ebx, SIZEOF songStructure
+			imul ebx, currentTotalSongNumber
+			add edi, ebx					;the  beginning address of the new song
+			invoke lstrcpy, ADDR (songStructure PTR [edi]).songName, ADDR tempPath
+			invoke lstrcpy, ADDR (songStructure PTR [edi]).songPath, lpstrAddr
 
-		;total number ++
-		add currentTotalSongNumber,1
-		mov eax,offset tempPath
-	.else 
+			;total number ++
+			add currentTotalSongNumber,1
+			mov eax,offset tempPath
+		.else 
+			mov eax,0
+		.endif
+	.else
 		mov eax,0
 	.endif
-
 	ret
 importSingleSong endp
 
