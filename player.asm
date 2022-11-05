@@ -365,7 +365,7 @@ listProc endp
 ;######################################################
 listDialogInit proc dialogHandle: dword
 	; set timer
-	invoke SetTimer, dialogHandle, 1, 5000, NULL
+	invoke SetTimer, dialogHandle, 1, 3000, NULL
 
 	mov ebx,0
 	mov ecx,currentTotalSongNumber
