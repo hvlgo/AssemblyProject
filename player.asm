@@ -271,7 +271,9 @@ deleteSong proc dialogHandle:dword,deleteSongIndex:dword
 			.if eax == currentTotalSongNumber
 				mov currentSongIndex,0
 			.endif
-			invoke musicPlayControl, mainHandle, _BEGIN, currentSongIndex   ;change the song
+			.if playButtonState == _PLAY
+				invoke musicPlayControl, mainHandle, _BEGIN, currentSongIndex   ;change the song
+			.endif
 		.endif		
 	.endif
 	ret
