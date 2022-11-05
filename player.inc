@@ -175,7 +175,7 @@ firstPath BYTE "D:\zfh\AssemblyProject\hw1\\*",0			;testMsg
 
 ;used to get current path(which .exe file in)
 szFileName byte 8000 dup(0)
-scName byte "music",0
+scName byte "initMusic",0
 
 ; mci command
 getPositionCommand byte "status currentSong position", 0	
