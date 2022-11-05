@@ -230,6 +230,7 @@ lyricPreparation byte "，，，，，，",0
 
 ;handle of main dialog
 mainHandle dword 0
+listHandle dword 0
 
 ;whether the list dialog is firstly inited
 listFirstInit dword 0

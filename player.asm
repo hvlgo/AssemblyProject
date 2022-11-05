@@ -102,6 +102,7 @@ mainProc proc dialogHandle : dword, message : dword, wParam : dword, lParam : dw
 			.endif
 		.endif
 	.elseif	eax == WM_CLOSE
+		invoke SendMessage, listHandle, WM_CLOSE, 0, 0
 		invoke	EndDialog, dialogHandle, 0
 	.endif
 	xor eax, eax
@@ -365,7 +366,7 @@ listProc endp
 ;######################################################
 listDialogInit proc dialogHandle: dword
 	; set timer
-	invoke SetTimer, dialogHandle, 1, 5000, NULL
+	invoke SetTimer, dialogHandle, 1, 3000, NULL
 
 	mov ebx,0
 	mov ecx,currentTotalSongNumber
@@ -385,7 +386,8 @@ listDialogInit proc dialogHandle: dword
 		mov listFirstInit,1
 		invoke firstPlay,dialogHandle
 	.endif
-
+	mov eax, dialogHandle
+	mov listHandle, eax
 	ret
 listDialogInit endp
 
